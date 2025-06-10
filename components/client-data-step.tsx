@@ -106,6 +106,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
             value={clientData.name}
             onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
             placeholder="Enter client's full name"
+            autoComplete="name"
             className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
           />
         </div>
@@ -164,6 +165,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
                   onChange={(e) => handleDateChange(e.target.value)}
                   placeholder="DD/MM/YYYY"
                   maxLength={10}
+                  autoComplete="bday"
                   className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
                 />
               </TabsContent>
@@ -174,6 +176,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
                   onChange={(e) => handleAgeChange(e.target.value)}
                   placeholder="Enter age (e.g., 35)"
                   maxLength={3}
+                  autoComplete="off"
                   className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
                 />
               </TabsContent>

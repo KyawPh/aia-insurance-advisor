@@ -11,6 +11,7 @@ import { Search, Save, Edit, ChevronDown, ChevronUp, Plus, Trash } from "lucide-
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import AuthGuard from "@/components/auth/auth-guard"
 
 const Pagination = ({
   currentPage,
@@ -375,7 +376,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 p-3 sm:p-4 md:p-8">
+    <AuthGuard requireAuth={true} adminOnly={true}>
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 p-3 sm:p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header with AIA Logo */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
@@ -1351,5 +1353,6 @@ export default function AdminPage() {
         </Tabs>
       </div>
     </div>
+    </AuthGuard>
   )
 }
