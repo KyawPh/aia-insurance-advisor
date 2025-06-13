@@ -1,6 +1,6 @@
 # AIA Insurance Advisor - Myanmar Edition
 
-A modern, professional insurance recommendation tool built specifically for AIA Myanmar's insurance advisory services.
+A modern, professional insurance recommendation SaaS platform built specifically for AIA Myanmar's insurance advisory services.
 
 ## 🚀 Live Demo
 
@@ -10,35 +10,49 @@ A modern, professional insurance recommendation tool built specifically for AIA 
 
 The AIA Insurance Advisor is a comprehensive web application that streamlines the insurance consultation process through an intuitive 3-step wizard. It uses real AIA Myanmar premium data to provide accurate quotes and generates professional PDF reports for customers.
 
-## ✨ Features
+## ✨ Key Features
 
 ### 🎯 **Core Functionality**
 - **3-Step Insurance Wizard** - Client Data → Product Selection → Report Generation
 - **Real Premium Calculations** - Authentic AIA Myanmar premium tables
-- **Professional PDF Reports** - Downloadable insurance recommendations
+- **Professional PDF Reports** - Downloadable insurance recommendations with AIA branding
 - **Mobile-Responsive Design** - Optimized for all devices
-- **Dynamic Age Validation** - Automatic product availability checking
+- **Session Persistence** - Auto-saves client data between sessions
+
+### 🔐 **Authentication & Security**
+- **Firebase Authentication** - Email/password and Google sign-in
+- **Secure User Profiles** - Isolated user data with Firestore
+- **Session Management** - Persistent login with secure tokens
+- **Security Rules** - Comprehensive Firestore access control
+
+### 💳 **Subscription & Quota System**
+- **Free Trial** - 5 quotes for new users
+- **Unlimited Plans** - Monthly, 6-month, and 12-month options
+- **Grace Period** - 7 days with 5 quotes/day after subscription expires
+- **Real-time Quota Tracking** - Visual indicators and warnings
+- **Usage History** - Complete audit trail of generated quotes
 
 ### 🏥 **Insurance Products Supported**
 - **One Health Solution (OHS)** - 7 medical insurance plans
 - **Universal Life Insurance** - 6 flexible life insurance plans
 - **Short Term Endowment** - 5 term life insurance options  
-- **Cancer Care Coverage** - Specialized cancer protection
+- **Cancer Care Coverage** - Specialized cancer protection rider
 
 ### 💰 **Premium Features**
 - Age and gender-specific pricing
 - Insurance age calculations (real age + 1)
 - Myanmar Kyat (MMK) formatting with Lakh notation
 - Real-time premium updates
-- Optional product selection
+- Product eligibility validation
 
 ## 🛠 Tech Stack
 
 - **Frontend**: Next.js 15.2.4 with React 19
 - **Language**: TypeScript for type safety
-- **Styling**: Tailwind CSS with Radix UI components
+- **Styling**: Tailwind CSS with shadcn/ui components
 - **Animations**: Framer Motion
 - **PDF Generation**: jsPDF with autoTable
+- **Backend**: Firebase (Auth, Firestore)
 - **Hosting**: Firebase Hosting
 - **Package Manager**: pnpm
 
@@ -47,6 +61,7 @@ The AIA Insurance Advisor is a comprehensive web application that streamlines th
 ### Prerequisites
 - Node.js 18+ 
 - pnpm (recommended) or npm
+- Firebase project (for authentication)
 - Modern web browser
 
 ### Installation
@@ -62,12 +77,32 @@ The AIA Insurance Advisor is a comprehensive web application that streamlines th
    pnpm install
    ```
 
-3. **Start development server**
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Add your Firebase configuration:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+   ```
+
+4. **Set up Firestore security rules**
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
+5. **Start development server**
    ```bash
    pnpm dev
    ```
 
-4. **Open in browser**
+6. **Open in browser**
    ```
    http://localhost:3000
    ```
@@ -78,8 +113,8 @@ The AIA Insurance Advisor is a comprehensive web application that streamlines th
 # Build the application
 pnpm build
 
-# Deploy to Firebase (if configured)
-firebase deploy --only hosting
+# Deploy to Firebase
+pnpm deploy
 ```
 
 ## 📁 Project Structure
@@ -87,39 +122,80 @@ firebase deploy --only hosting
 ```
 aia-insurance-advisor/
 ├── app/                          # Next.js app directory
+│   ├── auth/                     # Authentication pages
+│   │   └── login/               # Login/signup page
+│   ├── profile/                 # User profile & subscription
+│   ├── privacy/                 # Privacy policy
+│   ├── terms/                   # Terms of service
 │   ├── globals.css              # Global styles
-│   ├── layout.tsx               # Root layout
+│   ├── layout.tsx               # Root layout with providers
 │   └── page.tsx                 # Main application
 ├── components/                   # React components
+│   ├── auth/                    # Auth components
+│   │   ├── auth-guard.tsx      # Route protection
+│   │   └── access-denied.tsx   # Access denial UI
 │   ├── ui/                      # Reusable UI components
 │   ├── client-data-step.tsx     # Step 1: Client info
 │   ├── product-selection-step.tsx # Step 2: Product selection
-│   └── report-generation-step.tsx # Step 3: Report generation
+│   ├── report-generation-step.tsx # Step 3: Report generation
+│   └── quota-guard.tsx          # Quota management wrapper
+├── contexts/                    # React contexts
+│   └── auth-context.tsx         # Authentication state
 ├── data/                        # Premium data and products
 │   ├── aia-products.ts          # Product catalog
-│   ├── ohs-premium-data.ts      # OHS premium tables
-│   ├── universal-life-premium-data.ts
-│   ├── short-term-endowment-premium-data.ts
-│   └── cancer-care-premium-data.ts
+│   ├── subscription-plans-data.ts # Pricing plans
+│   └── *-premium-data.ts        # Premium tables
+├── hooks/                       # Custom React hooks
+│   ├── use-quota.ts             # Quota management
+│   └── use-subscription-plans.ts # Subscription data
+├── lib/                         # Utility libraries
+│   ├── firebase.ts              # Firebase configuration
+│   ├── quota-service.ts         # Quota business logic
+│   ├── session-storage.ts       # Client data persistence
+│   └── user-utils.ts            # User helper functions
 ├── types/                       # TypeScript definitions
 ├── utils/                       # Utility functions
-└── public/                      # Static assets
+├── public/                      # Static assets
+├── scripts/                     # Admin scripts
+│   ├── manage-upgrades.js       # Upgrade request management
+│   ├── admin-utils.js           # Admin utility functions
+│   ├── firebase-admin-init.js   # Firebase Admin SDK setup
+│   └── setup.js                 # Setup wizard
+└── firestore.rules              # Security rules
 ```
 
 ## 💡 Key Features Explained
+
+### **Authentication System**
+- Email/password registration with display name
+- Google OAuth integration
+- Automatic user profile creation
+- Secure session management
+- Protected routes with AuthGuard
+
+### **Quota & Subscription Management**
+- **Free Trial**: 5 quotes for new users
+- **Unlimited Plans**: 
+  - Monthly: 15,000 MMK/month
+  - 6 Months: 10,000 MMK/month (25% off)
+  - 12 Months: 8,000 MMK/month (47% off)
+- **Grace Period**: 7 days with 5 quotes/day after expiration
+- **Visual Indicators**: Badge showing remaining quota
+- **Upgrade Prompts**: Smart upgrade suggestions
 
 ### **Smart Product Selection**
 - All products are optional (no forced selections)
 - Universal Life and Short Term Endowment are mutually exclusive
 - Dynamic age validation prevents invalid selections
 - Real-time premium calculations
+- Health tier options for Universal Life
 
 ### **Professional PDF Reports**
 - AIA-branded document design
 - Comprehensive coverage details table
 - Customer information summary
 - Professional recommendation text
-- Mobile-optimized generation
+- Timestamped reports with unique IDs
 
 ### **Myanmar Market Optimized**
 - Currency formatting with Lakh notation (L)
@@ -138,20 +214,20 @@ The application uses authentic AIA Myanmar premium tables:
 
 ## 🎨 Design System
 
-- **Colors**: AIA red brand colors throughout
+- **Colors**: AIA red brand colors (#DC2626) throughout
 - **Typography**: Professional, readable font hierarchy
-- **Components**: Radix UI for accessibility
+- **Components**: shadcn/ui for consistency and accessibility
 - **Animations**: Subtle Framer Motion interactions
 - **Responsive**: Mobile-first design approach
 
 ## 🔧 Configuration
 
-### Firebase Hosting
-The project is configured for Firebase hosting with:
-- Static export optimization
-- Proper routing rewrites
-- Cache headers for performance
-- Professional domain setup
+### Firebase Setup
+1. Create a Firebase project
+2. Enable Authentication (Email/Password and Google)
+3. Create Firestore database
+4. Deploy security rules from `firestore.rules`
+5. Add Firebase config to `.env.local`
 
 ### Build Configuration
 - Next.js static export enabled
@@ -164,23 +240,29 @@ The project is configured for Firebase hosting with:
 - Touch-optimized interface
 - Responsive table rendering
 - Mobile-specific PDF generation
-- Viewport optimization to prevent zoom issues
-- Offline-capable design
+- Viewport optimization
+- Offline-capable session storage
 
 ## 🚀 Deployment
 
 ### Firebase Hosting
 ```bash
-# Build and deploy
-pnpm run deploy
+# One-command deploy
+pnpm deploy
 
-# Or manually
+# Or step by step
 pnpm build
 firebase deploy --only hosting
 ```
 
-### Environment Setup
-No environment variables required for basic functionality.
+### Environment Variables
+Required for authentication:
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ## 🤝 Contributing
 
@@ -194,15 +276,48 @@ No environment variables required for basic functionality.
 
 This project is developed for AIA Myanmar's internal use. All premium data and calculations are based on official AIA Myanmar documentation.
 
-## 🔮 Future Enhancements
+## 🔮 Recent Updates
 
-See [ENHANCEMENT_ROADMAP.md](./ENHANCEMENT_ROADMAP.md) for detailed future development plans including:
+- ✅ Firebase Authentication integration
+- ✅ User profile management
+- ✅ Subscription and quota system
+- ✅ Grace period implementation
+- ✅ Session persistence
+- ✅ Security rules and access control
+- ✅ Admin CLI for upgrade management
 
-- User authentication with Firebase
-- Agent performance dashboards
-- Multi-language support (Myanmar/Burmese)
-- Advanced analytics and reporting
-- CRM integration capabilities
+## 👨‍💼 Admin Tools
+
+### Upgrade Request Management
+
+Admin scripts are available in the `scripts/` directory for managing subscription upgrades:
+
+```bash
+# Navigate to scripts directory
+cd scripts
+
+# Install dependencies
+npm install
+
+# Run setup wizard
+npm run setup
+
+# Test connection
+npm test
+
+# Launch admin console
+npm run manage-upgrades
+```
+
+**Features:**
+- Process pending upgrade requests
+- Approve/reject with payment tracking
+- View user subscription details
+- Generate revenue statistics
+- Manual subscription management
+- User data export
+
+See `scripts/README.md` for detailed admin documentation.
 
 ## 📞 Support
 
@@ -210,10 +325,10 @@ For technical support or business inquiries, please contact the AIA Myanmar IT d
 
 ---
 
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Last Updated**: January 2025  
 **Built for**: AIA Myanmar Insurance Advisory Services
 
 ---
 
-*Professional insurance recommendation tool designed specifically for the Myanmar market* 🇲🇲
+*Professional insurance recommendation platform designed specifically for the Myanmar market* 🇲🇲

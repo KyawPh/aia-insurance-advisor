@@ -71,7 +71,7 @@ export default function AccessDenied() {
                   </li>
                   <li className="flex items-center">
                     <Shield className="h-4 w-4 mr-2 text-red-500 flex-shrink-0" />
-                    This page requires administrator access
+                    This page requires special permissions
                   </li>
                 </ul>
               </motion.div>
@@ -106,7 +106,7 @@ export default function AccessDenied() {
                 className="pt-6 border-t border-gray-100"
               >
                 <p className="text-xs text-gray-500">
-                  Need help? Contact your administrator or AIA support.
+                  Need help? Contact AIA support.
                 </p>
               </motion.div>
             </CardContent>

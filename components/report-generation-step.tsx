@@ -18,17 +18,31 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { clearSession, initializeSession } from "@/lib/session-storage"
+import { useQuota } from "@/hooks/use-quota"
 
 interface ReportGenerationStepProps {
   clientData: ClientData
   productSelections: ProductSelections
-  onPrevious: () => void
+  onNewQuote?: () => void
 }
 
 
-export default function ReportGenerationStep({ clientData, productSelections, onPrevious }: ReportGenerationStepProps) {
+export default function ReportGenerationStep({ clientData, productSelections, onNewQuote }: ReportGenerationStepProps) {
+  const { trackActivity } = useQuota()
   const age = calculateAge(clientData.dateOfBirth)
   const insuranceAge = age + 1
+
+  const handleNewQuote = () => {
+    // Clear session and trigger parent new quote handler if provided
+    clearSession()
+    if (onNewQuote) {
+      onNewQuote()
+    } else {
+      // Fallback: reload the page (but this should be handled by parent)
+      window.location.reload()
+    }
+  }
 
 
   // Import OHS plan details from actual data
@@ -73,7 +87,11 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       clientData.gender,
     )
     totalPremium += universalLifePremium
-    universalLifeCoverage = `${productSelections.universalLife.planId} Coverage`
+    // Get the actual sum assured amount for display
+    const ulPlan = require("@/data/universal-life-premium-data").universalLifePlans.find(
+      (plan: any) => plan.planId === productSelections.universalLife!.planId
+    )
+    universalLifeCoverage = ulPlan ? formatMMK(ulPlan.sumAssured) : ""
   }
 
   // Term Life Premium
@@ -82,9 +100,9 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   if (productSelections.termLife) {
     termLifePremium = getTermLifePremium(productSelections.termLife.planId, age, clientData.gender)
     totalPremium += termLifePremium
-    // Get the proper display name instead of ID
+    // Get the actual coverage amount for display
     const termPlan = shortTermEndowmentPlans.find(plan => plan.id === productSelections.termLife!.planId)
-    termLifeCoverage = termPlan ? termPlan.name : productSelections.termLife!.planId
+    termLifeCoverage = termPlan ? formatMMK(termPlan.coverage) : ""
   }
 
   // Cancer Rider Premium
@@ -152,6 +170,18 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     
     try {
       await generatePDFReport()
+      
+      // Track PDF download activity for analytics
+      await trackActivity('pdf_downloaded', {
+        clientName: clientData.name,
+        selectedProducts: [
+          ...productSelections.ohsPlans.map(id => `OHS Plan ${id}`),
+          ...(productSelections.universalLife ? [`Universal Life ${productSelections.universalLife.planId}`] : []),
+          ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
+          ...(productSelections.cancerRider ? ['Cancer Care'] : [])
+        ]
+      })
+      
       if (overlay.parentNode) {
         document.body.removeChild(overlay)
       }
@@ -167,10 +197,8 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   
   const generatePDFReport = async () => {
     try {
-      console.log('Starting PDF generation...')
       // Create new PDF document
       const doc = new jsPDF('p', 'mm', 'a4')
-      console.log('PDF document created successfully')
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()
     
@@ -280,7 +308,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     ])
     
     // Generate table using autoTable
-    console.log('Generating table with data:', tableData)
     autoTable(doc, {
       head: [tableHeaders],
       body: tableData,
@@ -332,9 +359,7 @@ The selected coverage options provide comprehensive protection across medical, l
     doc.text('AIA Myanmar Insurance Advisory Services', pageWidth - 20, pageHeight - 20, { align: 'right' })
     
     // Save the PDF
-    console.log('Saving PDF...')
     doc.save(`AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.pdf`)
-    console.log('PDF saved successfully')
     } catch (error) {
       console.error('PDF generation failed:', error)
       throw error // Re-throw to trigger fallback
@@ -587,31 +612,22 @@ Generated on: ${new Date().toLocaleDateString()}
       )}
 
       <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-8 border-t border-gray-200">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          className="w-full sm:w-auto px-6 h-11 sm:h-12 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg text-sm sm:text-base shadow-sm"
-        >
-          Back
-        </Button>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={handleDownloadReport}
-              variant="outline"
-              className="w-full sm:w-auto px-6 h-11 sm:h-12 border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm sm:text-base shadow-sm"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF Report
-            </Button>
-          </motion.div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
-            onClick={() => window.location.reload()}
-            className="w-full sm:w-auto px-6 h-11 sm:h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg text-sm sm:text-base shadow-md hover:shadow-lg"
+            onClick={handleDownloadReport}
+            variant="outline"
+            className="w-full sm:w-auto px-6 h-11 sm:h-12 border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm sm:text-base shadow-sm"
           >
-            Create New Quote
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF Report
           </Button>
-        </div>
+        </motion.div>
+        <Button
+          onClick={handleNewQuote}
+          className="w-full sm:w-auto px-6 h-11 sm:h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg text-sm sm:text-base shadow-md hover:shadow-lg"
+        >
+          Create New Quote
+        </Button>
       </div>
     </motion.div>
   )

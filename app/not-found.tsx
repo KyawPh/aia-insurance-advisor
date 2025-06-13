@@ -6,7 +6,7 @@ import Link from "next/link"
 export default function NotFound() {
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 flex items-center justify-center p-4">
       <div className="max-w-2xl mx-auto text-center">
         <div>
           <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -31,6 +31,7 @@ interface ProductSelectionStepProps {
   setProductSelections: (selections: ProductSelections) => void
   onNext: () => void
   onPrevious: () => void
+  isGeneratingQuote?: boolean
 }
 
 export default function ProductSelectionStep({
@@ -39,10 +40,9 @@ export default function ProductSelectionStep({
   setProductSelections,
   onNext,
   onPrevious,
+  isGeneratingQuote = false,
 }: ProductSelectionStepProps) {
   const [showMutualExclusionWarning, setShowMutualExclusionWarning] = useState(false)
-
-  // All products now start unselected - no forced defaults
 
   const age = calculateAge(clientData.dateOfBirth)
   const insuranceAge = age + 1
@@ -162,12 +162,25 @@ export default function ProductSelectionStep({
       className="space-y-8 sm:space-y-10"
     >
       {showMutualExclusionWarning && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-          <Alert className="border-red-100 bg-red-50 rounded-lg shadow-sm">
-            <AlertDescription className="text-red-800 text-sm">
-              Universal Life and Term Life Insurance are mutually exclusive. Previous selection has been cleared.
-            </AlertDescription>
-          </Alert>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          exit={{ opacity: 0, y: -10 }}
+          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 p-[1px]"
+        >
+          <div className="relative bg-white rounded-xl p-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl" />
+            <div className="relative flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-lg flex items-center justify-center">
+                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-gray-900">
+                Universal Life and Term Life Insurance are mutually exclusive. Previous selection has been cleared.
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
 
@@ -193,22 +206,24 @@ export default function ProductSelectionStep({
                 key={plan.id}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`border rounded-xl p-4 sm:p-5 cursor-pointer transition-all hover:shadow-md ${
+                tabIndex={-1}
+                onClick={() => handleOHSSelection(plan.id, !isSelected)}
+                className={`border rounded-xl p-4 sm:p-5 transition-all hover:shadow-md cursor-pointer ${
                   isSelected
                     ? "border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm"
                     : "border-gray-200 hover:border-red-200 hover:bg-gray-50"
                 }`}
-                onClick={() => handleOHSSelection(plan.id, !isSelected)}
               >
                 <div className="flex items-center space-x-3 mb-3 sm:mb-4">
                   <Checkbox
                     checked={isSelected}
                     onCheckedChange={(checked) => handleOHSSelection(plan.id, checked as boolean)}
-                    className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                    tabIndex={plan.id}
+                    className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600 pointer-events-none"
                   />
-                  <Label className="font-medium text-gray-900 text-sm sm:text-base">{plan.name}</Label>
+                  <Label className="font-medium text-gray-900 text-sm sm:text-base pointer-events-none">{plan.name}</Label>
                 </div>
-                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 pointer-events-none">
                   <p>
                     <span className="text-gray-500">Daily Limit:</span> {formatMMK(plan.dailyLimit)}
                   </p>
@@ -246,10 +261,11 @@ export default function ProductSelectionStep({
             </p>
           </div>
         ) : (
-          <Tabs defaultValue="term" className="w-full">
+          <Tabs defaultValue="term" className="w-full" activationMode="manual">
             <TabsList className="w-full grid grid-cols-2 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg h-auto">
             <TabsTrigger
               value="term"
+              tabIndex={8}
               className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-2 sm:px-3"
             >
               <span className="hidden sm:inline">Short Term Endowment</span>
@@ -257,6 +273,7 @@ export default function ProductSelectionStep({
             </TabsTrigger>
             <TabsTrigger
               value="universal"
+              tabIndex={9}
               className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-2 sm:px-3"
             >
               <span className="hidden sm:inline">Universal Life Insurance</span>
@@ -278,7 +295,7 @@ export default function ProductSelectionStep({
                   whileTap={{ scale: 0.98 }}
                   className="flex items-center space-x-3 p-4 sm:p-5 border rounded-xl hover:bg-gray-50 hover:border-red-200 transition-all"
                 >
-                  <RadioGroupItem value="" id="term-none" className="border-red-600 text-red-600" />
+                  <RadioGroupItem value="" id="term-none" tabIndex={10} className="border-red-600 text-red-600" />
                   <Label htmlFor="term-none" className="flex-1 cursor-pointer">
                     <div>
                       <p className="font-medium text-gray-900 text-sm sm:text-base">None</p>
@@ -296,7 +313,7 @@ export default function ProductSelectionStep({
                       whileTap={{ scale: 0.98 }}
                       className="flex items-center space-x-3 p-4 sm:p-5 border rounded-xl hover:bg-gray-50 hover:border-red-200 transition-all"
                     >
-                      <RadioGroupItem value={plan.id} id={plan.id} className="border-red-600 text-red-600" />
+                      <RadioGroupItem value={plan.id} id={plan.id} tabIndex={11 + termLifePlans.findIndex(p => p.id === plan.id)} className="border-red-600 text-red-600" />
                       <Label htmlFor={plan.id} className="flex-1 cursor-pointer">
                         <div>
                           <p className="font-medium text-gray-900 text-sm sm:text-base">{plan.name}</p>
@@ -329,7 +346,7 @@ export default function ProductSelectionStep({
                   whileTap={{ scale: 0.98 }}
                   className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <RadioGroupItem value="none" id="universal-none" className="border-red-600 text-red-600" />
+                  <RadioGroupItem value="none" id="universal-none" tabIndex={20} className="border-red-600 text-red-600" />
                   <Label htmlFor="universal-none" className="flex-1 cursor-pointer">
                     <div>
                       <p className="font-medium text-gray-900 text-sm sm:text-base">None</p>
@@ -370,6 +387,7 @@ export default function ProductSelectionStep({
                           <RadioGroupItem
                             value={tier}
                             id={`${plan.id}-${tier}`}
+                            tabIndex={21 + universalLifePlans.findIndex(p => p.id === plan.id) * 3 + plan.healthTiers.findIndex(t => t === tier)}
                             className="border-red-600 text-red-600"
                           />
                           <Label htmlFor={`${plan.id}-${tier}`} className="flex-1 cursor-pointer">
@@ -412,19 +430,21 @@ export default function ProductSelectionStep({
           <motion.div
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            className={`flex items-center space-x-4 p-4 sm:p-5 border rounded-xl cursor-pointer transition-all ${
+            tabIndex={-1}
+            onClick={() => handleCancerRiderToggle(!productSelections.cancerRider)}
+            className={`flex items-center space-x-4 p-4 sm:p-5 border rounded-xl transition-all cursor-pointer ${
               productSelections.cancerRider
                 ? "border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm"
                 : "border-gray-200 hover:border-red-200 hover:bg-gray-50"
             }`}
-            onClick={() => handleCancerRiderToggle(!productSelections.cancerRider)}
           >
           <Checkbox
             checked={productSelections.cancerRider}
             onCheckedChange={handleCancerRiderToggle}
-            className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+            tabIndex={40}
+            className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600 pointer-events-none"
           />
-          <div className="flex-1">
+          <div className="flex-1 pointer-events-none">
             <p className="font-medium text-gray-900 text-sm sm:text-base">AIA Cancer Care Coverage</p>
             <p className="text-xs sm:text-sm text-gray-600">Coverage: {formatMMK(100000000)}</p>
             <div className="mt-2 pt-2 border-t border-gray-100">
@@ -441,16 +461,26 @@ export default function ProductSelectionStep({
         <Button
           variant="outline"
           onClick={onPrevious}
-          className="w-full sm:w-auto px-6 h-11 sm:h-12 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg text-sm sm:text-base shadow-sm"
+          disabled={isGeneratingQuote}
+          tabIndex={41}
+          className="w-full sm:w-auto px-6 h-11 sm:h-12 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg text-sm sm:text-base shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Back
         </Button>
         <Button
           onClick={onNext}
-          disabled={!hasAnySelection}
+          disabled={!hasAnySelection || isGeneratingQuote}
+          tabIndex={42}
           className="w-full sm:w-auto px-6 h-11 sm:h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm sm:text-base shadow-md hover:shadow-lg disabled:shadow-none"
         >
-          Generate Report
+          {isGeneratingQuote ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Generating Report...
+            </>
+          ) : (
+            'Generate Report'
+          )}
         </Button>
       </div>
     </motion.div>

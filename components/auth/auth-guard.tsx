@@ -9,10 +9,9 @@ import AccessDenied from "./access-denied"
 interface AuthGuardProps {
   children: React.ReactNode
   requireAuth?: boolean
-  adminOnly?: boolean
 }
 
-export default function AuthGuard({ children, requireAuth = false, adminOnly = false }: AuthGuardProps) {
+export default function AuthGuard({ children, requireAuth = false }: AuthGuardProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -22,22 +21,16 @@ export default function AuthGuard({ children, requireAuth = false, adminOnly = f
 
     // Redirect logic
     if (requireAuth && !user) {
-      router.push("/auth/login")
+      router.replace("/auth/login")
       return
     }
-
-    // TODO: Add admin check when admin role is implemented
-    // if (adminOnly && !isAdmin) {
-    //   router.push("/auth/login")
-    //   return
-    // }
 
     // Redirect authenticated users away from login page
     if (pathname === "/auth/login" && user) {
-      router.push("/")
+      router.replace("/")
       return
     }
-  }, [user, loading, requireAuth, adminOnly, router, pathname])
+  }, [user, loading, requireAuth, router, pathname])
 
   if (loading) {
     return <LoadingSpinner />
@@ -45,11 +38,6 @@ export default function AuthGuard({ children, requireAuth = false, adminOnly = f
 
   // Don't render anything while redirecting - let the redirect happen
   if (requireAuth && !user) {
-    return null // Router will handle redirect
-  }
-
-  // Don't render anything while redirecting - let the redirect happen  
-  if (adminOnly && !user) {
     return null // Router will handle redirect
   }
 

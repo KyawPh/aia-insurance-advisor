@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,13 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
-import Image from "next/image"
 import { motion } from "framer-motion"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { GoogleIcon } from "@/components/ui/google-icon"
 
-function LoginPageContent() {
+export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -22,15 +21,27 @@ function LoginPageContent() {
   const [success, setSuccess] = useState("")
   const [activeTab, setActiveTab] = useState("login")
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const { signIn, signUp, signInWithGoogle } = useAuth()
+  const { signIn, signUp, signInWithGoogle, user, loading } = useAuth()
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (!loading && user) {
+      console.log("LoginPage: User authenticated, redirecting to home")
+      setSuccess("Redirecting to dashboard...")
+      router.replace("/")
+    }
+  }, [user, loading, router])
 
   useEffect(() => {
-    const tab = searchParams.get("tab")
-    if (tab === "signup") {
-      setActiveTab("signup")
+    // Check URL for tab parameter using window.location (client-side only)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tab = urlParams.get("tab")
+      if (tab === "signup") {
+        setActiveTab("signup")
+      }
     }
-  }, [searchParams])
+  }, [])
 
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -54,9 +65,7 @@ function LoginPageContent() {
     try {
       await signIn(loginData.email, loginData.password)
       setSuccess("Login successful! Redirecting...")
-      setTimeout(() => {
-        router.push("/")
-      }, 1000)
+      // Remove manual redirect - let AuthGuard handle it
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please try again.")
     } finally {
@@ -88,9 +97,7 @@ function LoginPageContent() {
 
       await signUp(signupData.email, signupData.password, signupData.fullName)
       setSuccess("Account created successfully! Redirecting...")
-      setTimeout(() => {
-        router.push("/")
-      }, 1000)
+      // Remove manual redirect - let AuthGuard handle it
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed. Please try again.")
     } finally {
@@ -105,9 +112,7 @@ function LoginPageContent() {
     try {
       await signInWithGoogle()
       setSuccess("Google authentication successful! Redirecting...")
-      setTimeout(() => {
-        router.push("/")
-      }, 1000)
+      // Remove manual redirect - let AuthGuard handle it
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google authentication failed. Please try again.")
     } finally {
@@ -115,24 +120,24 @@ function LoginPageContent() {
     }
   }
 
+  // Show loading if user is authenticated (redirecting)
+  if (!loading && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          {/* Header with AIA Logo */}
+          {/* Header */}
           <div className="text-center mb-8">
-            <div className="flex justify-center items-center mb-4">
-              <div className="relative h-16 w-32 sm:h-20 sm:w-40">
-                <Image
-                  src="/logo.png"
-                  alt="AIA Logo"
-                  fill
-                  style={{ objectFit: "contain" }}
-                  priority
-                  className="drop-shadow-sm"
-                />
-              </div>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-light text-red-900 mb-2">Welcome</h1>
             <p className="text-sm sm:text-base text-gray-500">Access your insurance advisor platform</p>
           </div>
@@ -161,17 +166,27 @@ function LoginPageContent() {
                 {/* Error/Success Messages */}
                 {error && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-                    <Alert variant="destructive" className="border-red-200 bg-red-50">
-                      <AlertDescription className="text-red-800 text-sm">{error}</AlertDescription>
-                    </Alert>
+                    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-pink-500 p-[1px]">
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                          <p className="text-sm font-medium text-gray-900">{error}</p>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
 
                 {success && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-                    <Alert className="border-green-200 bg-green-50">
-                      <AlertDescription className="text-green-800 text-sm">{success}</AlertDescription>
-                    </Alert>
+                    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-[1px]">
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          <p className="text-sm font-medium text-gray-900">{success}</p>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
 
@@ -415,13 +430,5 @@ function LoginPageContent() {
         </motion.div>
       </div>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginPageContent />
-    </Suspense>
   )
 }

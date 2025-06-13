@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
@@ -18,6 +18,7 @@ const missingVars = Object.entries(requiredEnvVars)
   .map(([key]) => key)
 
 if (missingVars.length > 0) {
+  console.error('Firebase configuration missing:', missingVars)
   throw new Error(
     `Missing Firebase configuration. Please set the following environment variables:\n${missingVars.map(v => `NEXT_PUBLIC_FIREBASE_${v.toUpperCase()}`).join('\n')}\n\nCopy .env.example to .env.local and add your Firebase config values.`
   )
@@ -32,8 +33,14 @@ const firebaseConfig = {
   appId: requiredEnvVars.appId
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+// Initialize Firebase (prevent multiple initialization)
+let app
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+} catch (error) {
+  console.error('Firebase initialization error:', error)
+  throw error
+}
 
 // Initialize Firebase Auth and get a reference to the service
 export const auth = getAuth(app)

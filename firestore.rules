@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - users can only access their own data
+    match /users/{userId} {
+      // Allow read and write access to authenticated users for their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Additional validation for writes
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && validateUserData(request.resource.data);
+    }
+    
+    // Usage collection - users can only read their own usage records and create new ones
+    match /usage/{usageId} {
+      // Allow users to read their own usage records
+      allow read: if request.auth != null 
+        && resource.data.userId == request.auth.uid;
+      
+      // Allow users to create usage records for themselves
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && validateUsageData(request.resource.data);
+      
+      // No update or delete allowed on usage records (immutable for audit trail)
+      allow update, delete: if false;
+    }
+    
+    // Quota plans collection (read-only for all authenticated users)
+    match /quotaPlans/{planId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can modify plans (via admin app)
+    }
+    
+    // Upgrade requests collection
+    match /upgradeRequests/{requestId} {
+      // Users can read their own upgrade requests
+      allow read: if request.auth != null 
+        && resource.data.userId == request.auth.uid;
+      
+      // Users can create upgrade requests for themselves
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && validateUpgradeRequest(request.resource.data);
+      
+      // No update or delete allowed by users (only admins)
+      allow update, delete: if false;
+    }
+    
+    // Admin collections (if you add them later) - restrict to admin users
+    match /admin/{document=**} {
+      allow read, write: if false; // Will be handled by admin app with service account
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+  
+  // Validation function for user data
+  function validateUserData(data) {
+    return data.keys().hasAll(['uid', 'email', 'fullName', 'createdAt', 'lastLogin', 'subscription'])
+      && data.uid is string
+      && data.email is string  
+      && data.fullName is string
+      && data.createdAt is timestamp
+      && data.lastLogin is timestamp
+      && data.subscription.keys().hasAll(['plan', 'quotaLimit', 'quotaUsed', 'quotaResetDate', 'isActive', 'billingPeriod', 'extraQuota'])
+      && data.subscription.plan in ['free', 'standard', 'premium', 'enterprise']
+      && data.subscription.billingPeriod in ['monthly', 'yearly']
+      && data.subscription.quotaLimit is number
+      && data.subscription.quotaUsed is number
+      && data.subscription.quotaResetDate is timestamp
+      && data.subscription.isActive is bool;
+  }
+  
+  // Validation function for usage data
+  function validateUsageData(data) {
+    return data.keys().hasAll(['userId', 'action', 'timestamp', 'metadata', 'quotaConsumed'])
+      && data.userId is string
+      && data.action in ['quote_generated', 'pdf_downloaded', 'report_viewed']
+      && data.timestamp is timestamp
+      && data.metadata is map
+      && data.quotaConsumed is number
+      && data.quotaConsumed >= 0; // Allow 0 for tracking activities that don't consume quota
+  }
+  
+  // Validation function for upgrade requests
+  function validateUpgradeRequest(data) {
+    return data.keys().hasAll(['userId', 'userEmail', 'userName', 'plan', 'billingPeriod', 'amount', 'paymentMethod', 'status'])
+      && data.userId is string
+      && data.userEmail is string
+      && data.userName is string
+      && data.plan == 'unlimited'
+      && data.billingPeriod in ['monthly', '6months', '12months']
+      && data.amount is number
+      && data.amount > 0
+      && data.paymentMethod in ['wave_money', 'kbz_pay', 'bank_transfer']
+      && data.status == 'pending';
+  }
+}

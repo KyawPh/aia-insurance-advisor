@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">

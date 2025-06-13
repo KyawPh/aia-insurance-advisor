@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { ClientData } from "@/types/insurance"
 import { calculateAge, formatDateInput } from "@/utils/calculations"
+import { saveClientData } from "@/lib/session-storage"
 import { motion } from "framer-motion"
 
 interface ClientDataStepProps {
@@ -67,6 +68,8 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
 
   const handleNext = () => {
     if (validateForm()) {
+      // Save client data only when moving to next step
+      saveClientData(clientData)
       onNext()
     }
   }
@@ -82,17 +85,34 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
       className="space-y-6 sm:space-y-8"
     >
       {errors.length > 0 && (
-        <Alert variant="destructive" className="border-red-100 bg-red-50 rounded-lg">
-          <AlertDescription className="text-red-800">
-            <ul className="list-disc list-inside space-y-1">
-              {errors.map((error, index) => (
-                <li key={index} className="text-sm">
-                  {error}
-                </li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-red-500 to-pink-500 p-[1px]"
+        >
+          <div className="relative bg-white rounded-xl p-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl" />
+            <div className="relative">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">Please fix the following errors:</h3>
+                  <ul className="list-disc list-inside space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index} className="text-sm text-gray-700">
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       <div className="space-y-8 flex flex-col items-center">
@@ -107,6 +127,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
             onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
             placeholder="Enter client's full name"
             autoComplete="name"
+            tabIndex={1}
             className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
           />
         </div>
@@ -120,13 +141,13 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
             className="flex flex-row gap-12"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="male" id="male" className="border-red-600 text-red-600" />
+              <RadioGroupItem value="male" id="male" tabIndex={2} className="border-red-600 text-red-600" />
               <Label htmlFor="male" className="text-sm sm:text-base cursor-pointer">
                 Male
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="female" id="female" className="border-red-600 text-red-600" />
+              <RadioGroupItem value="female" id="female" tabIndex={3} className="border-red-600 text-red-600" />
               <Label htmlFor="female" className="text-sm sm:text-base cursor-pointer">
                 Female
               </Label>
@@ -142,16 +163,19 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
             value={ageInputMethod}
             onValueChange={(value) => setAgeInputMethod(value as "dob" | "age")}
             className="w-full"
+            activationMode="manual"
           >
             <TabsList className="grid w-full max-w-xs grid-cols-2 mb-4 bg-gray-100 p-1 rounded-lg h-auto">
               <TabsTrigger
                 value="dob"
+                tabIndex={4}
                 className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2"
               >
                 Date of Birth
               </TabsTrigger>
               <TabsTrigger
                 value="age"
+                tabIndex={5}
                 className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2"
               >
                 Age Only
@@ -161,22 +185,26 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
             <div className="space-y-4">
               <TabsContent value="dob" className="mt-0">
                 <Input
+                  id="dateOfBirth"
                   value={clientData.dateOfBirth}
                   onChange={(e) => handleDateChange(e.target.value)}
                   placeholder="DD/MM/YYYY"
                   maxLength={10}
                   autoComplete="bday"
+                  tabIndex={6}
                   className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
                 />
               </TabsContent>
 
               <TabsContent value="age" className="mt-0">
                 <Input
+                  id="ageInput"
                   value={ageInput}
                   onChange={(e) => handleAgeChange(e.target.value)}
                   placeholder="Enter age (e.g., 35)"
                   maxLength={3}
                   autoComplete="off"
+                  tabIndex={6}
                   className="h-11 sm:h-12 border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg text-sm sm:text-base w-full shadow-sm transition-all"
                 />
               </TabsContent>
@@ -206,6 +234,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
       <div className="flex justify-center pt-6">
         <Button
           onClick={handleNext}
+          tabIndex={7}
           className="w-full sm:w-auto px-6 sm:px-8 h-11 sm:h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-normal rounded-lg transition-all text-sm sm:text-base shadow-md hover:shadow-lg"
         >
           Continue

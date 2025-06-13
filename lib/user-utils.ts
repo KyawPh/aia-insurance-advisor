@@ -18,15 +18,6 @@ export const getInitials = (name: string): string => {
     .substring(0, 2)
 }
 
-/**
- * Format number as Myanmar Kyat (MMK) currency
- * @param amount - Amount to format
- * @returns Formatted currency string
- */
-export const formatMMK = (amount: number): string => {
-  if (typeof amount !== 'number' || isNaN(amount)) return '0'
-  return new Intl.NumberFormat('en-US').format(amount)
-}
 
 /**
  * Format date string to readable format
