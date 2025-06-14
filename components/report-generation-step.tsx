@@ -16,6 +16,7 @@ import { getOHSCoverage } from "@/data/ohs-premium-data"
 import { shortTermEndowmentPlans } from "@/data/short-term-endowment-premium-data"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
+import html2canvas from "html2canvas"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { clearSession, initializeSession } from "@/lib/session-storage"
@@ -197,7 +198,235 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   
   const generatePDFReport = async () => {
     try {
-      // Create new PDF document
+      // Try to use html2canvas for better Myanmar text support
+      const reportElement = document.getElementById('insurance-report-table')
+      if (reportElement) {
+        // Clone the element to modify it for PDF
+        const clonedElement = reportElement.cloneNode(true) as HTMLElement
+        
+        // Fix table styling for PDF rendering
+        const table = clonedElement.querySelector('table')
+        if (table) {
+          // Add explicit border styles
+          table.style.borderCollapse = 'collapse'
+          table.style.border = '1px solid #e5e7eb'
+          
+          // Fix all cells to have proper borders
+          const cells = clonedElement.querySelectorAll('th, td')
+          cells.forEach((cell) => {
+            const element = cell as HTMLElement
+            element.style.border = '1px solid #e5e7eb'
+            element.style.padding = '12px' // Back to default padding
+            element.style.verticalAlign = 'middle'
+            element.style.lineHeight = '1.5'
+            element.style.minHeight = '60px'
+            element.style.height = 'auto'
+            
+            // Remove space-y classes that might affect alignment
+            element.className = element.className.replace(/space-y-\d+/g, '')
+            
+            // Fix div containers inside cells for better vertical centering
+            const divs = element.querySelectorAll('div')
+            divs.forEach((div, index) => {
+              const divElement = div as HTMLElement
+              divElement.style.margin = '0'
+              divElement.style.padding = '0'
+              
+              // Check if this is a container div with nested divs
+              const nestedDivs = divElement.querySelectorAll('div')
+              if (nestedDivs.length > 0) {
+                // This is a container with English and Myanmar text
+                const innerDivs = Array.from(nestedDivs)
+                innerDivs.forEach((innerDiv, innerIndex) => {
+                  const innerElement = innerDiv as HTMLElement
+                  if (innerIndex === 0) {
+                    // Hide English text
+                    innerElement.style.display = 'none'
+                  } else {
+                    // Show Myanmar text with proper styling
+                    innerElement.style.display = 'block'
+                    innerElement.style.lineHeight = '1.8'
+                  }
+                })
+              } else if (divs.length > 1) {
+                // Direct divs without nesting
+                if (index === 0) {
+                  // Hide English text
+                  divElement.style.display = 'none'
+                } else {
+                  // Show Myanmar text
+                  divElement.style.display = 'block'
+                  divElement.style.lineHeight = '1.8'
+                }
+              }
+            })
+          })
+          
+          // Fix header cells
+          const headerCells = clonedElement.querySelectorAll('th')
+          headerCells.forEach((cell) => {
+            const element = cell as HTMLElement
+            element.style.backgroundColor = '#dc2626'
+            element.style.color = 'white'
+            element.style.fontWeight = 'bold'
+            
+            // Override padding for header cells
+            if (!element.getAttribute('colspan')) {
+              element.style.padding = '12px'
+            }
+            
+            // Special styling for full-width header/footer cells
+            if (element.getAttribute('colspan')) {
+              element.style.textAlign = 'center'
+              element.style.verticalAlign = 'middle'
+              element.style.padding = '12px' // Back to original padding
+              if (element.closest('tr')?.classList.contains('from-gray-700')) {
+                element.style.backgroundColor = '#374151'
+              }
+            }
+          })
+          
+          // Fix footer cells
+          const footerCells = clonedElement.querySelectorAll('td[colspan]')
+          footerCells.forEach((cell) => {
+            const element = cell as HTMLElement
+            if (element.closest('tr')?.classList.contains('from-gray-700')) {
+              element.style.backgroundColor = '#374151'
+              element.style.color = 'white'
+              element.style.textAlign = 'center'
+              element.style.verticalAlign = 'middle'
+              element.style.padding = '12px' // Back to original padding
+            }
+          })
+          
+          // Fix specific row backgrounds
+          const rows = clonedElement.querySelectorAll('tr')
+          rows.forEach((row, index) => {
+            const element = row as HTMLElement
+            if (element.classList.contains('bg-gradient-to-r')) {
+              element.style.background = '#fef2f2'
+            } else if (element.classList.contains('bg-gray-50')) {
+              element.style.backgroundColor = '#f9fafb'
+            }
+          })
+          
+          // Special handling for left column cells with bilingual text
+          const leftColumnCells = clonedElement.querySelectorAll('td.bg-gray-50')
+          leftColumnCells.forEach((cell) => {
+            const element = cell as HTMLElement
+            element.style.textAlign = 'left'
+            element.style.padding = '12px' // Back to original padding
+          })
+        }
+        
+        // Create a temporary container
+        const tempContainer = document.createElement('div')
+        tempContainer.style.position = 'absolute'
+        tempContainer.style.left = '-9999px'
+        tempContainer.style.width = '210mm' // A4 width
+        tempContainer.style.backgroundColor = 'white'
+        tempContainer.style.padding = '20px'
+        
+        // Add style for Myanmar text
+        const styleTag = document.createElement('style')
+        styleTag.innerHTML = `
+          .myanmar-text {
+            line-height: 1.8 !important;
+            font-family: "Padauk", "Pyidaungsu", "Myanmar3", sans-serif !important;
+          }
+        `
+        tempContainer.appendChild(styleTag)
+        
+        // Add header
+        const header = document.createElement('div')
+        header.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+            <div style="color: #dc2626; font-size: 24px; font-weight: bold;">AIA</div>
+            <div style="color: #374151; font-size: 18px;">Insurance Recommendation Report</div>
+          </div>
+          <div style="border-bottom: 2px solid #dc2626; margin-bottom: 20px;"></div>
+          
+          <!-- Client Information Bar matching the report style -->
+          <div style="background: linear-gradient(to right, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 14px;">
+              <div>
+                <span style="color: #6b7280;">Client:</span>
+                <span style="margin-left: 8px; font-weight: 500; color: #111827;">${clientData.name}</span>
+              </div>
+              <div>
+                <span style="color: #6b7280;">Age:</span>
+                <span style="margin-left: 8px; font-weight: 500; color: #111827;">
+                  ${age} years (Insurance Age: ${insuranceAge})
+                </span>
+              </div>
+              <div>
+                <span style="color: #6b7280;">Gender:</span>
+                <span style="margin-left: 8px; font-weight: 500; color: #111827;">
+                  ${clientData.gender === "male" ? "Male" : "Female"}
+                </span>
+              </div>
+            </div>
+          </div>
+        `
+        
+        tempContainer.appendChild(header)
+        tempContainer.appendChild(clonedElement)
+        
+        // Add footer
+        const footer = document.createElement('div')
+        footer.innerHTML = `
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 10px;">Generated on: ${new Date().toLocaleDateString()}</p>
+            <p style="color: #6b7280; font-size: 10px; text-align: right;">AIA Myanmar Insurance Advisory Services</p>
+          </div>
+        `
+        tempContainer.appendChild(footer)
+        
+        document.body.appendChild(tempContainer)
+        
+        // Small delay to ensure styles are applied
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Generate canvas from HTML
+        const canvas = await html2canvas(tempContainer, {
+          scale: 3, // Higher scale for better quality
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: 794, // A4 width in pixels at 96 DPI
+          imageTimeout: 0, // Disable image timeout
+          allowTaint: true, // Allow cross-origin images
+          foreignObjectRendering: false, // Better CSS rendering
+        })
+        
+        // Remove temporary container
+        document.body.removeChild(tempContainer)
+        
+        // Convert to PDF
+        const imgData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF('p', 'mm', 'a4')
+        
+        const imgWidth = 210 // A4 width in mm
+        const pageHeight = 297 // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width
+        let heightLeft = imgHeight
+        let position = 0
+        
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+        
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight
+          pdf.addPage()
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+          heightLeft -= pageHeight
+        }
+        
+        pdf.save(`AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.pdf`)
+        return
+      }
+      
+      // Fallback to original jsPDF method without Myanmar text
       const doc = new jsPDF('p', 'mm', 'a4')
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()
@@ -454,8 +683,20 @@ Generated on: ${new Date().toLocaleDateString()}
           {/* Insurance Recommendation Table */}
           <div id="insurance-report-table" className="bg-white">
             <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
-              <Table className="w-full border-collapse" style={{ minWidth: "600px" }}>
+              <Table className="w-full border-collapse" style={{ minWidth: "600px", borderCollapse: "collapse", border: "1px solid #e5e7eb" }}>
                 <TableHeader>
+                  {/* Full width header row */}
+                  <TableRow className="bg-gradient-to-r from-gray-700 to-gray-800 border-0">
+                    <TableHead 
+                      colSpan={selectedOHSPlans.length + 1} 
+                      className="text-center text-white font-bold text-base py-5 border-0 align-middle"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <div>Comprehensive Health Insurance and Cancer Protection Table</div>
+                        <div className="text-sm font-medium">အလုံးစုံအသက်ကျန်းမာရေးအာမခံနှင့် ကင်ဆာအကာကွယ် ဇယား</div>
+                      </div>
+                    </TableHead>
+                  </TableRow>
                   <TableRow className="bg-gradient-to-r from-red-600 to-red-700 border-0">
                     <TableHead className="font-semibold text-white border-r border-red-500 text-left text-sm min-w-[200px] py-4">
                       Coverage Details
@@ -473,13 +714,16 @@ Generated on: ${new Date().toLocaleDateString()}
                 <TableBody>
                   {/* Annual Hospitalization/Medical Coverage */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      Annual Hospitalization/Medical Coverage
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>Annual Hospitalization/Medical Coverage</div>
+                        <div className="text-xs text-gray-600">နှစ်စဉ်ဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`annual-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {plan?.isDefault ? "—" : formatMMK(plan?.annualLimit || 0)}
                       </TableCell>
@@ -488,13 +732,16 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* Life Time Hospitalization/Medical Coverage */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      Life Time Hospitalization/Medical Coverage
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>Life Time Hospitalization/Medical Coverage</div>
+                        <div className="text-xs text-gray-600">တစ်သက်တာဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`lifetime-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {plan?.isDefault ? "—" : formatMMK((plan?.annualLimit || 0) * 10)}
                       </TableCell>
@@ -503,13 +750,16 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* One Day Room Fees */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      One Day Room Fees
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>One Day Room Fees</div>
+                        <div className="text-xs text-gray-600">တစ်ရက်ဆေးရုံအခန်းခ</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`daily-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {plan?.isDefault ? "—" : formatMMK(plan?.dailyLimit || 0)}
                       </TableCell>
@@ -518,13 +768,16 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* Accidental Death Coverage */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      Accidental Death Coverage
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>Accidental Death Coverage</div>
+                        <div className="text-xs text-gray-600">မတော်တဆမှုကြောင့်သေဆုံးခြင်းခံစားခွင့်</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`accident-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {plan?.isDefault ? "—" : formatMMK(plan?.accidentalDeath || 0)}
                       </TableCell>
@@ -533,13 +786,16 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* Death Coverage */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      Death Coverage
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>Death Coverage</div>
+                        <div className="text-xs text-gray-600">သေဆုံးခြင်းခံစားခွင့် / TPD ခံစားခွင့်</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`death-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {universalLifeCoverage || termLifeCoverage || "—"}
                       </TableCell>
@@ -548,13 +804,16 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* Cancer Coverage */}
                   <TableRow className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-4 text-sm bg-gray-50">
-                      Cancer Coverage
+                    <TableCell className="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+                      <div className="space-y-1">
+                        <div>Cancer Coverage</div>
+                        <div className="text-xs text-gray-600">ကင်ဆာအကာအကွယ်</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`cancer-${plan?.id}`}
-                        className="text-center border-r border-gray-200 last:border-r-0 py-4 text-gray-900 text-sm"
+                        className="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm"
                       >
                         {productSelections.cancerRider ? formatMMK(100000000) : "—"}
                       </TableCell>
@@ -563,17 +822,33 @@ Generated on: ${new Date().toLocaleDateString()}
 
                   {/* Premium Payments */}
                   <TableRow className="bg-gradient-to-r from-red-50 to-red-25 border-b-2 border-red-200">
-                    <TableCell className="font-bold text-red-900 border-r border-red-200 py-4 text-sm">
-                      Premium Payments (Annual)
+                    <TableCell className="font-bold text-red-900 border-r border-red-200 py-3 text-sm">
+                      <div className="space-y-1">
+                        <div>Premium Payments (Annual)</div>
+                        <div className="text-xs font-semibold text-red-700">တစ်နှစ်စာပရီမီယံသွင်းငွေ</div>
+                      </div>
                     </TableCell>
                     {selectedOHSPlans.map((plan) => (
                       <TableCell
                         key={`premium-${plan?.id}`}
-                        className="text-center font-bold text-red-700 border-r border-red-200 last:border-r-0 py-4 text-sm"
+                        className="text-center font-bold text-red-700 border-r border-red-200 last:border-r-0 py-3 text-sm"
                       >
                         {plan?.isDefault ? "—" : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`}
                       </TableCell>
                     ))}
+                  </TableRow>
+                  
+                  {/* Full width footer row */}
+                  <TableRow className="bg-gradient-to-r from-gray-700 to-gray-800">
+                    <TableCell 
+                      colSpan={selectedOHSPlans.length + 1} 
+                      className="text-center text-white py-5 border-0 align-middle"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <div className="text-sm font-medium">International Treatment Coverage & Cashless Claim Available</div>
+                        <div className="text-xs">နိုင်ငံတကာဆေးကုသခွင့်နိုင်ခြင်းနှင့် ငွေသားကြိုဆက်စရာမလို cashless claim နိုင်ခြင်း။</div>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
