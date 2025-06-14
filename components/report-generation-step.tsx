@@ -475,7 +475,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     
     // Prepare table data
     const tableHeaders = ['Coverage Type', ...selectedOHSPlans.map(plan => 
-      plan?.isDefault ? 'Default Plan' : `Plan ${plan?.id}`
+      plan?.isDefault ? 'Selected Coverage' : `Plan ${plan?.id}`
     )]
     
     const tableData = []
@@ -532,7 +532,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     tableData.push([
       'Premium Payments (Annual)',
       ...selectedOHSPlans.map(plan => 
-        plan?.isDefault ? '—' : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`
+        plan?.isDefault && getColumnPremium(0) === 0 ? '—' : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`
       )
     ])
     
@@ -706,7 +706,7 @@ Generated on: ${new Date().toLocaleDateString()}
                         key={plan?.id}
                         className="font-semibold text-white text-center border-r border-red-500 last:border-r-0 text-sm min-w-[120px] py-4"
                       >
-                        {plan?.isDefault ? "Default Plan" : `Plan ${plan?.id}`}
+                        {plan?.isDefault ? "Selected Coverage" : `Plan ${plan?.id}`}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -833,7 +833,7 @@ Generated on: ${new Date().toLocaleDateString()}
                         key={`premium-${plan?.id}`}
                         className="text-center font-bold text-red-700 border-r border-red-200 last:border-r-0 py-3 text-sm"
                       >
-                        {plan?.isDefault ? "—" : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`}
+                        {plan?.isDefault && getColumnPremium(0) === 0 ? "—" : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -846,7 +846,7 @@ Generated on: ${new Date().toLocaleDateString()}
                     >
                       <div className="flex flex-col items-center justify-center gap-1">
                         <div className="text-sm font-medium">International Treatment Coverage & Cashless Claim Available</div>
-                        <div className="text-xs">နိုင်ငံတကာဆေးကုသခွင့်နိုင်ခြင်းနှင့် ငွေသားကြိုဆက်စရာမလို cashless claim နိုင်ခြင်း။</div>
+                        <div className="text-xs">နိုင်ငံတကာဆေးကုသခွင့်ရနိုင်ခြင်းနှင့် ငွေသားကြိုသွင်းစရာမလို cashless claim နိုင်ခြင်း။</div>
                       </div>
                     </TableCell>
                   </TableRow>

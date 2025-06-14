@@ -26,8 +26,9 @@ if (!process.env.FIREBASE_PROJECT_ID) {
 // Initialize Firebase Admin
 let app;
 try {
+  const serviceAccountPath = join(__dirname, 'serviceAccountKey.json');
   const serviceAccount = JSON.parse(
-    readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8')
+    readFileSync(serviceAccountPath, 'utf8')
   );
 
   app = initializeApp({
