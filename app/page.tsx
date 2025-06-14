@@ -334,6 +334,13 @@ function AIAInsuranceAdvisorContent() {
         {/* Footer */}
         <div className="text-center text-xs sm:text-sm text-gray-400">
           <p>© {new Date().getFullYear()} AIA Insurance Advisor</p>
+          <Button 
+            onClick={() => router.push("/qr")} 
+            variant="link" 
+            className="text-xs text-gray-400 hover:text-gray-600 mt-2"
+          >
+            Share via QR Code
+          </Button>
         </div>
       </div>
 
