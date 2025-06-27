@@ -380,7 +380,7 @@ function AIAInsuranceAdvisorContent() {
                       <span className="font-medium text-gray-700 capitalize">{quota?.plan || 'Free'}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">Quota:</span>
+                      <span className="text-gray-500">Monthly Quota:</span>
                       <span className={`font-medium ${isLowQuota ? 'text-red-600' : 'text-gray-700'}`}>
                         {quotaRemaining}/{quotaLimit}
                       </span>
@@ -424,7 +424,7 @@ function AIAInsuranceAdvisorContent() {
                            flex items-center text-xs font-medium whitespace-nowrap 
                            cursor-pointer transition-colors"
               >
-                <span>{quotaRemaining} {quotaRemaining === 1 ? 'Quote' : 'Quotes'} Left</span>
+                <span>{quotaRemaining} {quotaRemaining === 1 ? 'Quote' : 'Quotes'} Left This Month</span>
               </div>
             )}
             </div>

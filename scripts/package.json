@@ -5,7 +5,13 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "admin": "node manage-upgrades.js",
+    "help": "node help.js",
+    "list-users": "node list-users.js",
     "manage-upgrades": "node manage-upgrades.js",
+    "update-quota": "node update-free-quota.js",
+    "fix-quota": "node fix-user-quota.js",
+    "recalculate": "node recalculate-subscription.js",
     "setup": "node setup.js",
     "test": "node test-connection.js",
     "postinstall": "echo 'Run \"npm run setup\" to configure the admin scripts'"

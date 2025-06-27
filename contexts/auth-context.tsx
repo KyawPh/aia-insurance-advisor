@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isInGracePeriod: false,
             
             // Quota tracking
-            quotaLimit: 5,
+            quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
             quotaUsed: 0,
             dailyQuotaUsed: 0,
             dailyQuotaLimit: 5, // Default for grace period
@@ -100,8 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider)
-      return result
+      await signInWithPopup(auth, googleProvider)
     } catch (error: any) {
       // Don't log popup closed errors as they're expected user behavior
       if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {

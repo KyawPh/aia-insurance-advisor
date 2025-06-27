@@ -247,11 +247,19 @@ function ProfileContent() {
 
   // Get analytics data from usage history
   const getAnalytics = () => {
+    const now = new Date()
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    
     const last30Days = usageHistory.filter(item => {
       const itemDate = new Date(item.timestamp)
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       return itemDate >= thirtyDaysAgo
+    })
+    
+    const currentMonth = usageHistory.filter(item => {
+      const itemDate = new Date(item.timestamp)
+      return itemDate >= currentMonthStart
     })
 
     const quotesByDay = last30Days.reduce((acc, item) => {
@@ -263,13 +271,15 @@ function ProfileContent() {
     const totalQuotes = last30Days.filter(item => item.action === 'quote_generated').length
     const totalDownloads = last30Days.filter(item => item.action === 'pdf_downloaded').length
     const totalViews = last30Days.filter(item => item.action === 'report_viewed').length
+    const currentMonthQuotes = currentMonth.filter(item => item.action === 'quote_generated').length
 
     return {
       totalQuotes,
       totalDownloads, 
       totalViews,
       quotesByDay,
-      averageQuotesPerDay: totalQuotes / 30
+      averageQuotesPerDay: totalQuotes / 30,
+      currentMonthQuotes
     }
   }
 
@@ -549,7 +559,8 @@ function ProfileContent() {
             {/* Right Column - Tabs */}
             <div className="lg:col-span-2">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-5 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg h-auto">
+                {/* TEMPORARY: Changed from grid-cols-5 to grid-cols-4 - Plans tab hidden */}
+                <TabsList className="w-full grid grid-cols-4 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg h-auto">
                   <TabsTrigger
                     value="overview"
                     className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-1 sm:px-2"
@@ -571,6 +582,7 @@ function ProfileContent() {
                     <span className="hidden sm:inline">Analytics</span>
                     <span className="sm:hidden">Stats</span>
                   </TabsTrigger>
+                  {/* TEMPORARY: Plans/Billing tab hidden for promotional period
                   <TabsTrigger
                     value="plans"
                     className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-1 sm:px-2"
@@ -578,6 +590,7 @@ function ProfileContent() {
                     <span className="hidden sm:inline">Billing</span>
                     <span className="sm:hidden">Billing</span>
                   </TabsTrigger>
+                  */}
                   <TabsTrigger
                     value="settings"
                     className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-1 sm:px-2"
@@ -613,7 +626,8 @@ function ProfileContent() {
                         
                         {!quotaLoading && quota && (
                           <>
-                        {/* Subscription Status Alerts */}
+                        {/* TEMPORARY: Subscription status alerts hidden for promotional period
+                        Subscription Status Alerts
                         {quota?.subscription?.isInGracePeriod && quota.subscription.gracePeriodEnd && (
                           <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-[1px]">
                             <div className="relative bg-white rounded-xl p-4">
@@ -645,7 +659,8 @@ function ProfileContent() {
                           </div>
                         )}
                         
-                        {/* Expiry Warning (7 days before) */}
+                        {/* TEMPORARY: Subscription expiry warnings hidden
+                        Expiry Warning (7 days before)
                         {quota?.subscription?.subscriptionEnd && 
                          quota.subscription.isActive && 
                          !quota.subscription.isInGracePeriod && (
@@ -689,15 +704,20 @@ function ProfileContent() {
                             return null
                           })()
                         )}
+                        */}
                         
                         <div className="flex justify-between items-center">
                           <div>
                             {quota?.subscription?.plan === 'free' ? (
                               <>
-                                <p className="text-sm font-medium">Free Trial Quota</p>
+                                <p className="text-sm font-medium">Monthly Quota</p>
                                 <p className="text-2xl font-bold">{quotaRemaining}<span className="text-sm text-gray-500">/{quotaLimit}</span></p>
                                 <div className="space-y-1">
-                                  <p className="text-xs text-gray-500">quotes remaining</p>
+                                  <p className="text-xs text-gray-500">quotes remaining this month</p>
+                                  <p className="text-xs text-blue-600">Resets on the 1st of each month</p>
+                                  {analytics.currentMonthQuotes !== quotaUsed && (
+                                    <p className="text-xs text-amber-600 mt-1">Syncing usage data...</p>
+                                  )}
                                 </div>
                               </>
                             ) : quota?.subscription?.isInGracePeriod ? (
@@ -726,7 +746,7 @@ function ProfileContent() {
                             {quota?.subscription?.plan === 'free' ? (
                               <>
                                 <p className="text-sm font-medium">{Math.round((quotaUsed / quotaLimit) * 100)}% used</p>
-                                <p className="text-xs text-gray-500">No expiry</p>
+                                <p className="text-xs text-gray-500">Monthly reset</p>
                               </>
                             ) : quota?.subscription?.isInGracePeriod ? (
                               <>
@@ -783,7 +803,8 @@ function ProfileContent() {
                           />
                         )}
                         
-                        {/* Upgrade Prompts for Free Users */}
+                        {/* TEMPORARY: Upgrade prompts hidden for promotional period
+                        Upgrade Prompts for Free Users
                         {quota?.subscription?.plan === 'free' && (
                           <div className="mt-4 space-y-3">
                             {plans.filter(p => p.id !== 'free').map((planData) => (
@@ -814,6 +835,7 @@ function ProfileContent() {
                             ))}
                           </div>
                         )}
+                        */}
                           </>
                         )}
 
@@ -913,6 +935,7 @@ function ProfileContent() {
                           <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
                           <p className="text-2xl font-bold">{analytics.totalQuotes}</p>
                           <p className="text-xs text-gray-500">Quotes (30 days)</p>
+                          <p className="text-xs text-gray-400 mt-1">{analytics.currentMonthQuotes} this month</p>
                         </CardContent>
                       </Card>
                       <Card className="shadow-md border-0">
@@ -1224,9 +1247,9 @@ function ProfileContent() {
                   </Card>
                 </TabsContent>
 
-                {/* Billing Tab */}
+                {/* TEMPORARY: Billing/Plans tab content hidden for promotional period
                 <TabsContent value="plans" className="space-y-6">
-                  {/* Current Plan Display */}
+                  Current Plan Display
                   <Card className="shadow-md border-0">
                     <CardHeader className="pb-4">
                       <div className="flex items-center space-x-2">
@@ -1253,7 +1276,7 @@ function ProfileContent() {
                     </CardContent>
                   </Card>
 
-                  {/* Upgrade Request History */}
+                  Upgrade Request History
                   {upgradeRequests.length > 0 && (
                     <Card className="shadow-md border-0">
                       <CardHeader className="pb-4">
@@ -1318,7 +1341,7 @@ function ProfileContent() {
                     </Card>
                   )}
 
-                  {/* Subscription Plans */}
+                  Subscription Plans
                   <Card className="shadow-md border-0">
                     <CardHeader className="pb-4">
                       <CardTitle className="text-lg font-medium">Subscription Plans</CardTitle>
@@ -1387,6 +1410,7 @@ function ProfileContent() {
 
 
                 </TabsContent>
+                */}
 
                 {/* Settings Tab */}
                 <TabsContent value="settings" className="space-y-6">

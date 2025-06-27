@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react'
 import { useQuota } from '@/hooks/use-quota'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,9 +67,9 @@ export function QuotaGuard({
           variant: "destructive" as const,
           className: "border-red-200 bg-red-50",
           icon: <AlertTriangle className="h-4 w-4" />,
-          title: "Free Trial Quota Exceeded",
-          message: `You have ${quotaRemaining} quotes remaining in your free trial.`,
-          resetInfo: "Upgrade to unlimited plan for continuous access."
+          title: "Monthly Quota Limit Reached",
+          message: `You have used all ${quota?.quotaLimit || 50} quotes for this month.`,
+          resetInfo: "Your quota will reset on the 1st of next month."
         }
       }
     }
@@ -113,6 +114,7 @@ export function QuotaGuard({
           </div>
         </div>
 
+        {/* TEMPORARY: Upgrade card hidden for promotional period
         {showUpgrade && (
           <Card className="border-2 border-red-100 bg-gradient-to-br from-red-50 to-white">
             <CardHeader className="text-center pb-4">
@@ -175,6 +177,7 @@ export function QuotaGuard({
             </CardContent>
           </Card>
         )}
+        */}
       </motion.div>
     )
   }
@@ -214,8 +217,8 @@ export function QuotaWarning() {
     } else {
       return {
         title: "Low Quota Warning",
-        message: `You have ${quotaRemaining} quotes remaining in your free trial.`,
-        action: "Upgrade now",
+        message: `You have ${quotaRemaining} quotes remaining this month.`,
+        action: "", // TEMPORARY: Upgrade action hidden
         className: "border-yellow-200 bg-yellow-50",
         textColor: "text-yellow-800",
         iconColor: "text-yellow-600"
@@ -239,6 +242,7 @@ export function QuotaWarning() {
             <div>
               <strong>{warning.title}:</strong> {warning.message}
             </div>
+            {/* TEMPORARY: Upgrade button hidden
             <Button 
               size="sm" 
               variant="link" 
@@ -247,6 +251,7 @@ export function QuotaWarning() {
             >
               {warning.action}
             </Button>
+            */}
           </div>
         </AlertDescription>
       </Alert>

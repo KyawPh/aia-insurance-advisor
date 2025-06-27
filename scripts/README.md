@@ -34,12 +34,12 @@ npm install
 
 ## Available Scripts
 
-### Manage Upgrade Requests
+### Main Admin Tool
 
-The main script for managing subscription upgrade requests:
+The main script for managing subscription upgrade requests and admin tasks:
 
 ```bash
-npm run manage-upgrades
+npm run admin
 ```
 
 Features:
@@ -47,33 +47,82 @@ Features:
 - List all upgrade requests
 - Process (approve/reject) upgrade requests
 - View user subscription details
+- List all users with comprehensive details
 - View upgrade statistics and revenue
+- Admin utilities menu (core functions only)
 
-## Script Features
+### List All Users
 
-### 1. List Upgrade Requests
+View a comprehensive list of all users in the system:
+
+```bash
+npm run list-users
+```
+
+Features:
+- View all users with email, name, plan, usage, and status
+- Filter by plan type (free/unlimited/all)
+- Sort by last login, creation date, or usage
+- Show/hide inactive users
+- Export to CSV for further analysis
+- Display usage statistics and summaries
+
+### One-Time Fix Scripts
+
+These scripts are for specific maintenance tasks and fixes:
+
+#### Update All Free Users Quota
+```bash
+npm run update-quota
+```
+- Updates all free users from old quota (5) to new quota (50)
+- Shows preview before making changes
+- Handles users without subscription data
+
+#### Fix Individual User Quota
+```bash
+npm run fix-quota
+```
+- Fix quota data for a specific user by email
+- Reset quota usage and set proper limits
+- Create missing subscription data
+
+#### Recalculate Subscription Duration
+```bash
+npm run recalculate
+```
+- Fix subscription end dates for users with multiple payments
+- Calculates total duration from all completed payments
+- Shows detailed payment history
+
+## Core Admin Features
+
+### 1. Main Admin Console (`npm run admin`)
+
+#### Upgrade Request Management
 - View all pending requests that need processing
 - See all requests with their status
-- Displays user info, plan details, payment method, and creation date
-
-### 2. Process Upgrade Requests
-- Select a pending request to process
-- View complete request details
-- Approve with payment reference
-- Reject with reason
+- Process requests (approve with payment reference or reject with reason)
 - Automatically updates user subscription on approval
 
-### 3. User Subscription Management
+#### User Subscription Lookup
 - Look up any user by email
 - View current subscription status
 - See quota usage (for free/grace period users)
 - View recent upgrade request history
 
-### 4. Statistics Dashboard
-- Total requests by status
-- Revenue summary
-- Revenue breakdown by billing period
+#### Statistics Dashboard
+- Total requests by status (pending/completed/rejected)
+- Revenue summary and breakdown by billing period
 - Active subscription count
+
+#### Admin Utilities Menu
+Clean, focused menu with only core functions:
+- **Create manual subscription** - For offline payments
+- **Extend subscription** - Add months to existing subscription
+- **Reset user quota** - Reset quota usage to 0
+- **Cancel subscription** - Deactivate with reason
+- **Export user data** - Full data export to JSON
 
 ## Upgrade Approval Flow
 

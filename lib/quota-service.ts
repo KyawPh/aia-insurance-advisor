@@ -79,7 +79,7 @@ export class QuotaService {
         isInGracePeriod: false,
         
         // Quota tracking
-        quotaLimit: 5,
+        quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
         quotaUsed: 0,
         dailyQuotaUsed: 0,
         dailyQuotaLimit: 5, // Default for grace period
@@ -117,11 +117,37 @@ export class QuotaService {
       let isInGracePeriod = false
       let canUseQuota = false
       
+      // TEMPORARY: Check for monthly reset
+      const lastResetDate = sub?.lastResetDate?.toDate()
+      const needsMonthlyReset = !lastResetDate || // If no reset date, needs reset
+        (now.getMonth() !== lastResetDate.getMonth() || 
+         now.getFullYear() !== lastResetDate.getFullYear())
+      
+      if (needsMonthlyReset && sub?.plan === 'free') {
+        // Reset quota for new month
+        const updates: any = {
+          'subscription.quotaUsed': 0,
+          'subscription.lastResetDate': Timestamp.fromDate(now)
+        }
+        
+        // Also ensure quotaLimit is set to 50 if not already
+        if (!sub?.quotaLimit || sub.quotaLimit !== 50) {
+          updates['subscription.quotaLimit'] = 50
+        }
+        
+        await updateDoc(doc(db, 'users', userId), updates)
+        sub.quotaUsed = 0
+        sub.lastResetDate = Timestamp.fromDate(now)
+        if (!sub.quotaLimit || sub.quotaLimit !== 50) {
+          sub.quotaLimit = 50
+        }
+      }
+      
       // Determine subscription status
       if (sub?.plan === 'free') {
         // Free trial - always active, quota limited
         isActive = true
-        canUseQuota = (sub?.quotaUsed || 0) < (sub?.quotaLimit || 5)
+        canUseQuota = (sub?.quotaUsed || 0) < (sub?.quotaLimit || 50) // TEMPORARY: Changed from 5 to 50
       } else if (sub?.plan === 'unlimited') {
         if (subscriptionEnd && now > subscriptionEnd) {
           // Subscription expired - check grace period
@@ -168,7 +194,7 @@ export class QuotaService {
       }
       
       // Calculate quota info
-      const quotaLimit = sub?.plan === 'unlimited' && isActive ? -1 : (sub?.quotaLimit || 5)
+      const quotaLimit = sub?.plan === 'unlimited' && isActive ? -1 : (sub?.quotaLimit || 50) // TEMPORARY: Changed from 5 to 50
       const quotaUsed = sub?.quotaUsed || 0
       const dailyQuotaUsed = sub?.dailyQuotaUsed || 0
       const dailyQuotaLimit = sub?.dailyQuotaLimit || 5
@@ -216,9 +242,9 @@ export class QuotaService {
   private static getDefaultQuota(): QuotaInfo {
     const now = new Date()
     return {
-      quotaLimit: 5,
+      quotaLimit: 50, // TEMPORARY: Changed from 5 to 50
       quotaUsed: 0,
-      quotaRemaining: 5,
+      quotaRemaining: 50, // TEMPORARY: Changed from 5 to 50
       dailyQuotaUsed: 0,
       dailyQuotaLimit: 5,
       lastResetDate: now,
@@ -394,7 +420,7 @@ export class QuotaService {
         name: plan.name,
         quotaLimit: plan.quotaLimit,
         features: plan.features,
-        billingOptions: plan.billingOptions
+        billingOptions: (plan as any).billingOptions || undefined
       }
     })
 

@@ -8,17 +8,19 @@ export interface BillingOption {
   savings?: string
 }
 
-// Free trial configuration
+// TEMPORARY: Subscription plans hidden for promotional period
+// Free trial configuration - temporarily set to 50 quotes per month
 export const freeTrial = {
   id: 'free',
   internalId: 'free', // For database compatibility
   name: 'Free Trial',
   displayName: 'Free Trial',
-  quotaLimit: 5,
-  description: '5 quotes • Perfect for trying out',
+  quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
+  description: '50 quotes per month', // TEMPORARY: Updated description
   features: [
-    '5 quotes total',
-    'Basic PDF reports',
+    '50 quotes per month', // TEMPORARY: Changed from '5 quotes total'
+    'Monthly quota reset',  // TEMPORARY: Added monthly reset info
+    'PDF reports',
     'Quote generation',
     'Basic analytics'
   ],

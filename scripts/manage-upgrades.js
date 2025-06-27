@@ -21,6 +21,7 @@ const MAIN_MENU_CHOICES = {
   LIST_ALL: 'List all upgrade requests',
   PROCESS_REQUEST: 'Process an upgrade request',
   VIEW_USER: 'View user subscription details',
+  LIST_USERS: 'List all users',
   STATS: 'View upgrade statistics',
   UTILITIES: 'Admin utilities',
   EXIT: 'Exit'
@@ -527,6 +528,19 @@ async function mainMenu() {
         
       case MAIN_MENU_CHOICES.VIEW_USER:
         await viewUserSubscription();
+        break;
+        
+      case MAIN_MENU_CHOICES.LIST_USERS:
+        // Run list-users script as a child process
+        const { spawn } = await import('child_process');
+        const listUsers = spawn('node', ['list-users.js'], {
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        
+        await new Promise((resolve) => {
+          listUsers.on('close', resolve);
+        });
         break;
         
       case MAIN_MENU_CHOICES.STATS:

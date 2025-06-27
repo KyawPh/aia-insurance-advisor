@@ -53,9 +53,9 @@ export function useQuota(): UseQuotaReturn {
       // Set default quota to prevent UI issues
       const now = new Date()
       setQuota({
-        quotaLimit: 5,
+        quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
         quotaUsed: 0,
-        quotaRemaining: 5,
+        quotaRemaining: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
         dailyQuotaUsed: 0,
         dailyQuotaLimit: 5,
         lastResetDate: now,
@@ -129,7 +129,7 @@ export function useQuota(): UseQuotaReturn {
     canUseQuota: quota?.canUseQuota ?? false,
     quotaRemaining: quota?.quotaRemaining ?? 0,
     quotaUsed: quota?.quotaUsed ?? 0,
-    quotaLimit: quota?.quotaLimit ?? 5,
+    quotaLimit: quota?.quotaLimit ?? 50, // TEMPORARY: Changed from 5 to 50 for promotional period
     resetDate: quota?.resetDate ?? null,
     plan: quota?.plan ?? 'free',
     isLowQuota: (() => {
