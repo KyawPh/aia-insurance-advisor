@@ -520,11 +520,30 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       // Get image URL
       const imageUrl = canvas.toDataURL('image/png')
       
-      // Open in new tab
-      const newTab = window.open('', '_blank')
+      // Convert data URL to blob for better mobile support
+      const dataURLtoBlob = (dataURL: string) => {
+        const parts = dataURL.split(',')
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png'
+        const bstr = atob(parts[1])
+        const n = bstr.length
+        const u8arr = new Uint8Array(n)
+        for (let i = 0; i < n; i++) {
+          u8arr[i] = bstr.charCodeAt(i)
+        }
+        return new Blob([u8arr], { type: mime })
+      }
+      
+      // Create blob URL for better compatibility
+      const blob = dataURLtoBlob(imageUrl)
+      const blobUrl = URL.createObjectURL(blob)
+      
+      // Try to open in new tab
+      const newTab = window.open(blobUrl, '_blank')
       
       if (newTab) {
-        newTab.document.write(`
+        // Successfully opened in new tab - write the HTML page
+        setTimeout(() => {
+          newTab.document.write(`
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -628,13 +647,27 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           </body>
           </html>
         `);
-        newTab.document.close();
+          newTab.document.close();
+          
+          // Clean up blob URL after a delay
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+        }, 100)
       } else {
-        // Fallback if popup is blocked
-        const link = document.createElement('a')
-        link.download = `AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.png`
-        link.href = imageUrl
-        link.click()
+        // Fallback if popup is blocked - show options to user
+        const shouldDownload = confirm(
+          'Unable to open in new tab. Would you like to download the report instead?\n\n' +
+          'Tip: You can also try disabling popup blocker for this site.'
+        )
+        
+        if (shouldDownload) {
+          const link = document.createElement('a')
+          link.download = `AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.png`
+          link.href = imageUrl
+          link.click()
+        }
+        
+        // Clean up blob URL
+        URL.revokeObjectURL(blobUrl)
       }
       
       // Track PNG view/download activity
