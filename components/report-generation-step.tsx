@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Download, FileText } from "lucide-react"
+import { Download, FileText, Image as ImageIcon } from "lucide-react"
 import type { ClientData, ProductSelections, OHSPlanWithPremium } from "@/types/insurance"
 import { calculateAge } from "@/utils/calculations"
 import { formatMMK } from "@/utils/formatting"
@@ -14,13 +14,12 @@ import {
 } from "@/utils/premium-tables"
 import { getOHSCoverage } from "@/data/ohs-premium-data"
 import { shortTermEndowmentPlans } from "@/data/short-term-endowment-premium-data"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import html2canvas from "html2canvas"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { clearSession, initializeSession } from "@/lib/session-storage"
 import { useQuota } from "@/hooks/use-quota"
+import { useAuth } from "@/contexts/auth-context"
 
 interface ReportGenerationStepProps {
   clientData: ClientData
@@ -31,6 +30,7 @@ interface ReportGenerationStepProps {
 
 export default function ReportGenerationStep({ clientData, productSelections, onNewQuote }: ReportGenerationStepProps) {
   const { trackActivity } = useQuota()
+  const { user } = useAuth()
   const age = calculateAge(clientData.dateOfBirth)
   const insuranceAge = age + 1
 
@@ -166,43 +166,16 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   }
 
 
-  const handleDownloadReport = async () => {
-    const overlay = createLoadingOverlay()
-    
-    try {
-      await generatePDFReport()
-      
-      // Track PDF download activity for analytics
-      await trackActivity('pdf_downloaded', {
-        clientName: clientData.name,
-        selectedProducts: [
-          ...productSelections.ohsPlans.map(id => `OHS Plan ${id}`),
-          ...(productSelections.universalLife ? [`Universal Life ${productSelections.universalLife.planId}`] : []),
-          ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
-          ...(productSelections.cancerRider ? ['Cancer Care'] : [])
-        ]
-      })
-      
-      if (overlay.parentNode) {
-        document.body.removeChild(overlay)
-      }
-    } catch (error) {
-      console.error("Error generating PDF report:", error)
-      if (overlay.parentNode) {
-        document.body.removeChild(overlay)
-      }
-      // Fallback to text download
-      downloadTextReport()
-    }
-  }
   
-  const generatePDFReport = async () => {
-    try {
-      // Try to use html2canvas for better Myanmar text support
-      const reportElement = document.getElementById('insurance-report-table')
-      if (reportElement) {
-        // Clone the element to modify it for PDF
-        const clonedElement = reportElement.cloneNode(true) as HTMLElement
+  // Common function to prepare HTML for export
+  const prepareReportHTML = (forPNG = false, customWidth?: string) => {
+    const reportElement = document.getElementById('insurance-report-table')
+    if (!reportElement) {
+      throw new Error('Report element not found')
+    }
+    
+    // Clone the element to modify it for export
+    const clonedElement = reportElement.cloneNode(true) as HTMLElement
         
         // Fix table styling for PDF rendering
         const table = clonedElement.querySelector('table')
@@ -211,55 +184,16 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           table.style.borderCollapse = 'collapse'
           table.style.border = '1px solid #e5e7eb'
           
-          // Fix all cells to have proper borders
+          // Fix all cells to have proper borders only
           const cells = clonedElement.querySelectorAll('th, td')
           cells.forEach((cell) => {
             const element = cell as HTMLElement
             element.style.border = '1px solid #e5e7eb'
-            element.style.padding = '12px' // Back to default padding
             element.style.verticalAlign = 'middle'
-            element.style.lineHeight = '1.5'
-            element.style.minHeight = '60px'
-            element.style.height = 'auto'
+            // Don't touch padding - let CSS classes handle it
             
-            // Remove space-y classes that might affect alignment
-            element.className = element.className.replace(/space-y-\d+/g, '')
-            
-            // Fix div containers inside cells for better vertical centering
-            const divs = element.querySelectorAll('div')
-            divs.forEach((div, index) => {
-              const divElement = div as HTMLElement
-              divElement.style.margin = '0'
-              divElement.style.padding = '0'
-              
-              // Check if this is a container div with nested divs
-              const nestedDivs = divElement.querySelectorAll('div')
-              if (nestedDivs.length > 0) {
-                // This is a container with English and Myanmar text
-                const innerDivs = Array.from(nestedDivs)
-                innerDivs.forEach((innerDiv, innerIndex) => {
-                  const innerElement = innerDiv as HTMLElement
-                  if (innerIndex === 0) {
-                    // Hide English text
-                    innerElement.style.display = 'none'
-                  } else {
-                    // Show Myanmar text with proper styling
-                    innerElement.style.display = 'block'
-                    innerElement.style.lineHeight = '1.8'
-                  }
-                })
-              } else if (divs.length > 1) {
-                // Direct divs without nesting
-                if (index === 0) {
-                  // Hide English text
-                  divElement.style.display = 'none'
-                } else {
-                  // Show Myanmar text
-                  divElement.style.display = 'block'
-                  divElement.style.lineHeight = '1.8'
-                }
-              }
-            })
+            // Keep the original div structure and spacing
+            // Don't hide any text - show both English and Myanmar
           })
           
           // Fix header cells
@@ -270,16 +204,13 @@ export default function ReportGenerationStep({ clientData, productSelections, on
             element.style.color = 'white'
             element.style.fontWeight = 'bold'
             
-            // Override padding for header cells
-            if (!element.getAttribute('colspan')) {
-              element.style.padding = '12px'
-            }
+            // Don't override padding - preserve original classes
             
             // Special styling for full-width header/footer cells
             if (element.getAttribute('colspan')) {
               element.style.textAlign = 'center'
               element.style.verticalAlign = 'middle'
-              element.style.padding = '12px' // Back to original padding
+              // Preserve original padding
               if (element.closest('tr')?.classList.contains('from-gray-700')) {
                 element.style.backgroundColor = '#374151'
               }
@@ -295,7 +226,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
               element.style.color = 'white'
               element.style.textAlign = 'center'
               element.style.verticalAlign = 'middle'
-              element.style.padding = '12px' // Back to original padding
+              // Preserve original padding
             }
           })
           
@@ -315,7 +246,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           leftColumnCells.forEach((cell) => {
             const element = cell as HTMLElement
             element.style.textAlign = 'left'
-            element.style.padding = '12px' // Back to original padding
+            // Preserve original padding
           })
         }
         
@@ -323,16 +254,162 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         const tempContainer = document.createElement('div')
         tempContainer.style.position = 'absolute'
         tempContainer.style.left = '-9999px'
-        tempContainer.style.width = '210mm' // A4 width
+        tempContainer.style.width = customWidth || '210mm' // Use custom width for PNG, A4 width for PDF
         tempContainer.style.backgroundColor = 'white'
         tempContainer.style.padding = '20px'
         
-        // Add style for Myanmar text
+        // Add comprehensive styles to match the original display
         const styleTag = document.createElement('style')
         styleTag.innerHTML = `
-          .myanmar-text {
+          /* Reset and base font */
+          * {
+            box-sizing: border-box;
+          }
+          body, div, table, th, td {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+          }
+          
+          /* Myanmar text specific styling */
+          .myanmar-text, div:lang(my) {
+            font-family: "Padauk", "Pyidaungsu", "Myanmar3", "Noto Sans Myanmar", sans-serif !important;
             line-height: 1.8 !important;
-            font-family: "Padauk", "Pyidaungsu", "Myanmar3", sans-serif !important;
+          }
+          
+          /* Table structure */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+          }
+          
+          /* Preserve exact Tailwind padding values */
+          .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+          .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+          .py-5 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+          .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+          .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+          .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+          
+          /* Header cells specific padding - less top, more bottom */
+          th[colspan] {
+            padding: 0.75rem 1rem 1.75rem 1rem !important;
+            height: auto !important;
+            line-height: 1.5 !important;
+          }
+          th:not([colspan]) {
+            padding: 0.5rem 1rem 1.5rem 1rem !important;
+            height: auto !important;
+          }
+          
+          /* Data cells specific padding - less top, more bottom */
+          td {
+            padding: 0.25rem 1rem 1.25rem 1rem !important;
+            height: auto !important;
+            vertical-align: middle !important;
+          }
+          
+          /* Left column cells - with bilingual text */
+          td.bg-gray-50 {
+            padding: 0.25rem 1rem 1.25rem 1rem !important;
+            background-color: #f9fafb !important;
+            vertical-align: middle !important;
+          }
+          
+          /* Use flexbox for better vertical centering in cells */
+          td.text-center {
+            display: table-cell !important;
+            vertical-align: middle !important;
+            text-align: center !important;
+          }
+          
+          /* Ensure divs inside cells don't add extra spacing */
+          td > div, th > div {
+            line-height: inherit !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Specific fix for cells with space-y-1 class */
+          td > div.space-y-1, th > div.space-y-1 {
+            display: block !important;
+          }
+          
+          /* For value cells (not the left column), ensure center alignment */
+          td:not(.bg-gray-50):not(:first-child) {
+            text-align: center !important;
+          }
+          
+          /* Space between text lines in bilingual cells */
+          .space-y-1 > * + * { 
+            margin-top: 0.25rem !important; /* Original spacing */
+          }
+          
+          /* Ensure Myanmar text has proper line height */
+          div.text-xs {
+            line-height: 1.2 !important; /* Tighter line height to match original */
+          }
+          
+          /* Text sizing - matching Tailwind exactly */
+          .text-xs { 
+            font-size: 0.75rem !important; 
+            line-height: 1rem !important; 
+          }
+          .text-sm { 
+            font-size: 0.875rem !important; 
+            line-height: 1.25rem !important; 
+          }
+          .text-base { 
+            font-size: 1rem !important; 
+            line-height: 1.5rem !important; 
+          }
+          
+          /* Font weights */
+          .font-medium { font-weight: 500 !important; }
+          .font-semibold { font-weight: 600 !important; }
+          .font-bold { font-weight: 700 !important; }
+          
+          /* Colors */
+          .text-gray-600 { color: #4b5563 !important; }
+          .text-gray-800 { color: #1f2937 !important; }
+          .text-gray-900 { color: #111827 !important; }
+          .text-white { color: #ffffff !important; }
+          
+          /* Premium row styling */
+          .bg-gradient-to-r {
+            background: #fef2f2 !important;
+          }
+          
+          /* Premium row first cell - ensure left alignment */
+          tr.bg-gradient-to-r td:first-child {
+            text-align: left !important;
+          }
+          
+          /* Premium row cells - same asymmetric padding */
+          tr.bg-gradient-to-r td {
+            padding: 0.25rem 1rem 1.25rem 1rem !important;
+          }
+          
+          /* Red text for premium amounts */
+          .text-red-700 { color: #b91c1c !important; }
+          .font-bold.text-red-700 { 
+            font-weight: 700 !important;
+          }
+          
+          /* Table minimum widths */
+          .min-w-\\[200px\\] { min-width: 200px !important; }
+          .min-w-\\[120px\\] { min-width: 120px !important; }
+          
+          /* Flex layouts */
+          .flex { display: flex !important; }
+          .flex-col { flex-direction: column !important; }
+          .items-center { align-items: center !important; }
+          .justify-center { justify-content: center !important; }
+          .gap-1 { gap: 0.25rem !important; }
+          
+          /* Fix client info bar vertical alignment */
+          div[style*="grid"] > div {
+            margin: 0 !important;
+            padding: 0 !important;
           }
         `
         tempContainer.appendChild(styleTag)
@@ -347,19 +424,19 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           <div style="border-bottom: 2px solid #dc2626; margin-bottom: 20px;"></div>
           
           <!-- Client Information Bar matching the report style -->
-          <div style="background: linear-gradient(to right, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 14px;">
-              <div>
+          <div style="background: linear-gradient(to right, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 6px 16px 18px 16px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 14px; align-items: center;">
+              <div style="line-height: 1.5;">
                 <span style="color: #6b7280;">Client:</span>
                 <span style="margin-left: 8px; font-weight: 500; color: #111827;">${clientData.name}</span>
               </div>
-              <div>
+              <div style="line-height: 1.5;">
                 <span style="color: #6b7280;">Age:</span>
                 <span style="margin-left: 8px; font-weight: 500; color: #111827;">
                   ${age} years (Insurance Age: ${insuranceAge})
                 </span>
               </div>
-              <div>
+              <div style="line-height: 1.5;">
                 <span style="color: #6b7280;">Gender:</span>
                 <span style="margin-left: 8px; font-weight: 500; color: #111827;">
                   ${clientData.gender === "male" ? "Male" : "Female"}
@@ -376,222 +453,211 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         const footer = document.createElement('div')
         footer.innerHTML = `
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #6b7280; font-size: 10px;">Generated on: ${new Date().toLocaleDateString()}</p>
-            <p style="color: #6b7280; font-size: 10px; text-align: right;">AIA Myanmar Insurance Advisory Services</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+              <div>
+                <p style="color: #6b7280; font-size: 10px; margin: 0;">Generated on: ${new Date().toLocaleDateString()}</p>
+                <p style="color: #6b7280; font-size: 10px; margin: 4px 0 0 0;">Generated by: ${user?.displayName || user?.email || 'Insurance Advisor'}</p>
+              </div>
+              <p style="color: #6b7280; font-size: 10px; margin: 0;">AIA Myanmar Insurance Advisory Services</p>
+            </div>
           </div>
         `
         tempContainer.appendChild(footer)
         
-        document.body.appendChild(tempContainer)
-        
-        // Small delay to ensure styles are applied
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // Generate canvas from HTML
-        const canvas = await html2canvas(tempContainer, {
-          scale: 3, // Higher scale for better quality
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          windowWidth: 794, // A4 width in pixels at 96 DPI
-          imageTimeout: 0, // Disable image timeout
-          allowTaint: true, // Allow cross-origin images
-          foreignObjectRendering: false, // Better CSS rendering
-        })
-        
-        // Remove temporary container
-        document.body.removeChild(tempContainer)
-        
-        // Convert to PDF
-        const imgData = canvas.toDataURL('image/png')
-        const pdf = new jsPDF('p', 'mm', 'a4')
-        
-        const imgWidth = 210 // A4 width in mm
-        const pageHeight = 297 // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width
-        let heightLeft = imgHeight
-        let position = 0
-        
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-        
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight
-          pdf.addPage()
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-          heightLeft -= pageHeight
+    document.body.appendChild(tempContainer)
+    
+    return {
+      tempContainer,
+      cleanup: () => {
+        if (tempContainer.parentNode) {
+          document.body.removeChild(tempContainer)
         }
-        
-        pdf.save(`AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.pdf`)
-        return
       }
-      
-      // Fallback to original jsPDF method without Myanmar text
-      const doc = new jsPDF('p', 'mm', 'a4')
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
-    
-    // Colors
-    const primaryColor: [number, number, number] = [220, 38, 38] // Red
-    const grayColor: [number, number, number] = [107, 114, 128]
-    const darkGray: [number, number, number] = [55, 65, 81]
-    
-    // Add AIA Header
-    doc.setFontSize(24)
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2])
-    doc.text('AIA', 20, 25)
-    
-    doc.setFontSize(18)
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
-    doc.text('Insurance Recommendation Report', 45, 25)
-    
-    // Add line separator
-    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2])
-    doc.setLineWidth(0.5)
-    doc.line(20, 30, pageWidth - 20, 30)
-    
-    // Client Information
-    doc.setFontSize(14)
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
-    doc.text('Client Information', 20, 45)
-    
-    doc.setFontSize(11)
-    doc.setTextColor(grayColor[0], grayColor[1], grayColor[2])
-    let yPos = 55
-    doc.text(`Name: ${clientData.name}`, 25, yPos)
-    yPos += 7
-    doc.text(`Date of Birth: ${clientData.dateOfBirth}`, 25, yPos)
-    yPos += 7
-    doc.text(`Age: ${age} years (Insurance Age: ${insuranceAge})`, 25, yPos)
-    yPos += 7
-    doc.text(`Gender: ${clientData.gender === 'male' ? 'Male' : 'Female'}`, 25, yPos)
-    yPos += 15
-    
-    // Coverage Details Table
-    doc.setFontSize(14)
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
-    doc.text('Coverage Details', 20, yPos)
-    yPos += 10
-    
-    // Prepare table data
-    const tableHeaders = ['Coverage Type', ...selectedOHSPlans.map(plan => 
-      plan?.isDefault ? 'Selected Coverage' : `Plan ${plan?.id}`
-    )]
-    
-    const tableData = []
-    
-    // Annual Hospitalization Coverage
-    tableData.push([
-      'Annual Hospitalization/Medical Coverage',
-      ...selectedOHSPlans.map(plan => 
-        plan?.isDefault ? '—' : formatMMK(plan?.annualLimit || 0)
-      )
-    ])
-    
-    // Life Time Coverage
-    tableData.push([
-      'Life Time Hospitalization/Medical Coverage',
-      ...selectedOHSPlans.map(plan => 
-        plan?.isDefault ? '—' : formatMMK((plan?.annualLimit || 0) * 10)
-      )
-    ])
-    
-    // Daily Room Fees
-    tableData.push([
-      'One Day Room Fees',
-      ...selectedOHSPlans.map(plan => 
-        plan?.isDefault ? '—' : formatMMK(plan?.dailyLimit || 0)
-      )
-    ])
-    
-    // Accidental Death Coverage
-    tableData.push([
-      'Accidental Death Coverage',
-      ...selectedOHSPlans.map(plan => 
-        plan?.isDefault ? '—' : formatMMK(plan?.accidentalDeath || 0)
-      )
-    ])
-    
-    // Death Coverage
-    tableData.push([
-      'Death Coverage',
-      ...selectedOHSPlans.map(() => 
-        universalLifeCoverage || termLifeCoverage || '—'
-      )
-    ])
-    
-    // Cancer Coverage
-    tableData.push([
-      'Cancer Coverage',
-      ...selectedOHSPlans.map(() => 
-        productSelections.cancerRider ? formatMMK(100000000) : '—'
-      )
-    ])
-    
-    // Premium Payments
-    tableData.push([
-      'Premium Payments (Annual)',
-      ...selectedOHSPlans.map(plan => 
-        plan?.isDefault && getColumnPremium(0) === 0 ? '—' : `${formatMMK(getColumnPremium(plan?.premium || 0))}/year`
-      )
-    ])
-    
-    // Generate table using autoTable
-    autoTable(doc, {
-      head: [tableHeaders],
-      body: tableData,
-      startY: yPos,
-      theme: 'grid',
-      headStyles: {
-        fillColor: primaryColor,
-        textColor: 255,
-        fontSize: 10,
-        fontStyle: 'bold'
-      },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: darkGray
-      },
-      alternateRowStyles: {
-        fillColor: [249, 250, 251]
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 50 }
-      },
-      margin: { left: 20, right: 20 },
-      tableWidth: 'auto'
-    })
-    
-    // Get final Y position after table
-    const finalY = (doc as any).lastAutoTable.finalY + 15
-    
-    // Professional Summary
-    if (finalY < pageHeight - 60) {
-      doc.setFontSize(14)
-      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
-      doc.text('Professional Recommendation', 20, finalY)
-      
-      doc.setFontSize(10)
-      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2])
-      const summaryText = `This comprehensive insurance recommendation has been meticulously crafted for ${clientData.name}, taking into account their current age of ${age} years (insurance age: ${insuranceAge}) and gender profile. Our analysis ensures optimal coverage while maintaining competitive premium rates.
-
-The selected coverage options provide comprehensive protection across medical, life, and specialized cancer coverage, delivering peace of mind and financial security for you and your loved ones.`
-      
-      const splitText = doc.splitTextToSize(summaryText, pageWidth - 40)
-      doc.text(splitText, 20, finalY + 10)
+    }
+  }
+  
+  
+  // View report as PNG in new tab
+  const viewPNGReport = async () => {
+    const overlay = createLoadingOverlay()
+    const loadingMessage = overlay.querySelector('#loading-message') as HTMLElement
+    if (loadingMessage) {
+      loadingMessage.textContent = 'Generating image report...'
     }
     
-    // Footer
-    doc.setFontSize(8)
-    doc.setTextColor(grayColor[0], grayColor[1], grayColor[2])
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, pageHeight - 20)
-    doc.text('AIA Myanmar Insurance Advisory Services', pageWidth - 20, pageHeight - 20, { align: 'right' })
-    
-    // Save the PDF
-    doc.save(`AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.pdf`)
+    try {
+      // Calculate dynamic width based on number of plans
+      // Base width for the left column + width per plan column
+      const baseWidth = 400 // Width for the coverage details column
+      const planColumnWidth = 180 // Width per plan column
+      const totalPlans = selectedOHSPlans.length
+      const calculatedWidth = baseWidth + (totalPlans * planColumnWidth)
+      const windowWidth = Math.max(1200, calculatedWidth) // Minimum 1200px
+      
+      // Pass custom width for PNG
+      const customWidth = `${windowWidth}px`
+      const { tempContainer, cleanup } = prepareReportHTML(true, customWidth)
+      
+      // Small delay to ensure styles are applied
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Generate canvas with dynamic width for full table capture
+      const canvas = await html2canvas(tempContainer, {
+        scale: 3, // Higher scale for better text rendering
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: windowWidth, // Dynamic width based on number of plans
+        imageTimeout: 0,
+        allowTaint: true,
+        foreignObjectRendering: false,
+        letterRendering: true, // Better text rendering
+      })
+      
+      // Clean up
+      cleanup()
+      
+      // Get image URL
+      const imageUrl = canvas.toDataURL('image/png')
+      
+      // Open in new tab
+      const newTab = window.open('', '_blank')
+      
+      if (newTab) {
+        newTab.document.write(`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <title>AIA Insurance Report - ${clientData.name}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta charset="UTF-8">
+            <style>
+              body { 
+                margin: 0; 
+                padding: 10px;
+                background: #f3f4f6;
+                font-family: system-ui, -apple-system, sans-serif;
+              }
+              .container {
+                max-width: 100%;
+                text-align: center;
+              }
+              img { 
+                max-width: 100%; 
+                height: auto; 
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                background: white;
+              }
+              .actions {
+                margin: 20px 0;
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                flex-wrap: wrap;
+              }
+              button {
+                background: #dc2626;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                font-size: 16px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: background 0.2s;
+              }
+              button:hover {
+                background: #b91c1c;
+              }
+              button:active {
+                transform: scale(0.98);
+              }
+              .info {
+                background: #fef3c7;
+                padding: 12px 20px;
+                border-radius: 6px;
+                margin: 20px auto;
+                max-width: 600px;
+                font-size: 14px;
+                color: #92400e;
+                line-height: 1.5;
+              }
+              @media print {
+                .actions, .info { display: none; }
+                body { background: white; padding: 0; }
+                img { box-shadow: none; max-width: 100%; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="actions">
+                <button onclick="downloadImage()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Download Image
+                </button>
+                <button onclick="window.print()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                  </svg>
+                  Print
+                </button>
+              </div>
+              <img src="${imageUrl}" alt="Insurance Report for ${clientData.name}">
+              <div class="info">
+                💡 <strong>Tip:</strong> On mobile devices, press and hold the image to save it to your photo gallery. You can also pinch to zoom for better viewing.
+              </div>
+            </div>
+            <script>
+              function downloadImage() {
+                const link = document.createElement('a');
+                link.download = 'AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}_${new Date().toISOString().split('T')[0]}.png';
+                link.href = '${imageUrl}';
+                link.click();
+              }
+            </script>
+          </body>
+          </html>
+        `);
+        newTab.document.close();
+      } else {
+        // Fallback if popup is blocked
+        const link = document.createElement('a')
+        link.download = `AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.png`
+        link.href = imageUrl
+        link.click()
+      }
+      
+      // Track PNG view/download activity
+      await trackActivity('png_downloaded', {
+        clientName: clientData.name,
+        selectedProducts: [
+          ...productSelections.ohsPlans.map(id => `OHS Plan ${id}`),
+          ...(productSelections.universalLife ? [`Universal Life ${productSelections.universalLife.planId}`] : []),
+          ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
+          ...(productSelections.cancerRider ? ['Cancer Care'] : [])
+        ],
+        viewMethod: newTab ? 'new_tab' : 'direct_download'
+      })
+      
+      if (overlay.parentNode) {
+        document.body.removeChild(overlay)
+      }
     } catch (error) {
-      console.error('PDF generation failed:', error)
-      throw error // Re-throw to trigger fallback
+      console.error("Error generating PNG report:", error)
+      if (overlay.parentNode) {
+        document.body.removeChild(overlay)
+      }
+      alert('Failed to generate image report. Please try the PDF option instead.')
     }
   }
   
@@ -889,12 +955,12 @@ Generated on: ${new Date().toLocaleDateString()}
       <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-8 border-t border-gray-200">
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
-            onClick={handleDownloadReport}
+            onClick={viewPNGReport}
             variant="outline"
-            className="w-full sm:w-auto px-6 h-11 sm:h-12 border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm sm:text-base shadow-sm"
+            className="w-full sm:w-auto px-4 sm:px-6 h-11 sm:h-12 border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm sm:text-base shadow-sm"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF Report
+            <ImageIcon className="h-4 w-4 mr-2" />
+            View/Print Report
           </Button>
         </motion.div>
         <Button
