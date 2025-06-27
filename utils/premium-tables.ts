@@ -17,12 +17,12 @@ export function getUniversalLifePremium(
   return getUniversalLifePremiumFromTable(planId, healthTier, insuranceAge)
 }
 
-export function getTermLifePremium(planId: string, age: number, gender: string): number {
-  return getShortTermEndowmentPremiumFromTable(planId, age, gender)
+export function getTermLifePremium(planId: string, insuranceAge: number, gender: string): number {
+  return getShortTermEndowmentPremiumFromTable(planId, insuranceAge, gender)
 }
 
-export function getCancerRiderPremium(age: number, gender: string): number {
-  return getCancerCarePremiumFromTable(age, gender)
+export function getCancerRiderPremium(insuranceAge: number, gender: string): number {
+  return getCancerCarePremiumFromTable(insuranceAge, gender)
 }
 
 // Note: Age factors no longer needed as real premium tables include age-specific pricing

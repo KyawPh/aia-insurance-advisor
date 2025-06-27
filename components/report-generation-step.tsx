@@ -99,7 +99,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   let termLifePremium = 0
   let termLifeCoverage = ""
   if (productSelections.termLife) {
-    termLifePremium = getTermLifePremium(productSelections.termLife.planId, age, clientData.gender)
+    termLifePremium = getTermLifePremium(productSelections.termLife.planId, insuranceAge, clientData.gender)
     totalPremium += termLifePremium
     // Get the actual coverage amount for display
     const termPlan = shortTermEndowmentPlans.find(plan => plan.id === productSelections.termLife!.planId)
@@ -109,7 +109,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   // Cancer Rider Premium
   let cancerRiderPremium = 0
   if (productSelections.cancerRider) {
-    cancerRiderPremium = getCancerRiderPremium(age, clientData.gender)
+    cancerRiderPremium = getCancerRiderPremium(insuranceAge, clientData.gender)
     totalPremium += cancerRiderPremium
   }
 
