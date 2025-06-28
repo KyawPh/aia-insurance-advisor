@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Download, FileText, Image as ImageIcon } from "lucide-react"
+import { Download, FileText } from "lucide-react"
 import type { ClientData, ProductSelections, OHSPlanWithPremium } from "@/types/insurance"
 import { calculateAge } from "@/utils/calculations"
 import { formatMMK } from "@/utils/formatting"
@@ -18,7 +17,7 @@ import { shortTermEndowmentPlans } from "@/data/short-term-endowment-premium-dat
 import html2canvas from "html2canvas"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { clearSession, initializeSession } from "@/lib/session-storage"
+import { clearSession } from "@/lib/session-storage"
 import { useQuota } from "@/hooks/use-quota"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -47,9 +46,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       window.location.reload()
     }
   }
-
-  // We'll define selectedOHSPlans first, then use useEffect after
-
 
   // Import OHS plan details from actual data
   const ohsPlansData = [1, 2, 3, 4, 5, 6, 7].map(planId => {
@@ -138,56 +134,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       }
     }
   }, [generatedImageUrl])
-
-
-  // Utility functions for download
-  const createLoadingOverlay = () => {
-    const overlay = document.createElement('div')
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.9);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: system-ui, -apple-system, sans-serif;
-    `
-    
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    
-    overlay.innerHTML = `
-      <div style="text-align: center; max-width: 300px; padding: 20px;">
-        <div style="width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top: 4px solid #dc2626; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
-        <p id="loading-message" style="color: #374151; font-size: 16px; margin: 0 0 8px 0;">Generating PDF report...</p>
-        ${isMobile ? '<p style="color: #6b7280; font-size: 14px; margin: 0;">This may take longer on mobile devices</p>' : ''}
-      </div>
-      <style>
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
-    `
-    document.body.appendChild(overlay)
-    
-    // Add timeout message for mobile
-    if (isMobile) {
-      setTimeout(() => {
-        const messageEl = overlay.querySelector('#loading-message')
-        if (messageEl && overlay.parentNode) {
-          messageEl.textContent = 'Still working... Mobile processing takes time'
-        }
-      }, 5000)
-    }
-    
-    return overlay
-  }
-
-
   
   // Common function to prepare HTML for export
   const prepareReportHTML = (forPNG = false, customWidth?: string) => {
@@ -696,8 +642,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     }
   }
 
-  
-
   const downloadPNG = async () => {
     if (!generatedImageUrl) return
     
@@ -732,38 +676,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       console.error('Error downloading PNG:', error)
       alert('Failed to download image. Please try saving by right-clicking the image.')
     }
-  }
-
-  const downloadTextReport = () => {
-    const reportContent = `
-AIA INSURANCE RECOMMENDATION REPORT
-
-Client Information:
-- Name: ${clientData.name}
-- Date of Birth: ${clientData.dateOfBirth}
-- Age: ${age} (Insurance Age: ${insuranceAge})
-- Gender: ${clientData.gender}
-
-Selected Coverage:
-${selectedOHSPlans.map((plan) => `- OHS Plan ${plan?.id}: ${formatMMK(plan?.premium || 0)}/year`).join("\n")}
-${productSelections.universalLife ? `- Universal Life ${productSelections.universalLife.planId} (${productSelections.universalLife.healthTier}): ${formatMMK(universalLifePremium)}/year` : ""}
-${productSelections.termLife ? `- Term Life ${productSelections.termLife.planId}: ${formatMMK(termLifePremium)}/year` : ""}
-${productSelections.cancerRider ? `- Cancer Rider: ${formatMMK(cancerRiderPremium)}/year` : ""}
-
-Total Annual Premium: ${formatMMK(totalPremium)}
-
-Generated on: ${new Date().toLocaleDateString()}
-    `
-
-    const blob = new Blob([reportContent], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   return (
