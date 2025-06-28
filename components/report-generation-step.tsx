@@ -14,6 +14,7 @@ import {
 } from "@/utils/premium-tables"
 import { getOHSCoverage } from "@/data/ohs-premium-data"
 import { shortTermEndowmentPlans } from "@/data/short-term-endowment-premium-data"
+import { universalLifePlans } from "@/data/universal-life-premium-data"
 import html2canvas from "html2canvas"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -21,12 +22,54 @@ import { clearSession } from "@/lib/session-storage"
 import { useQuota } from "@/hooks/use-quota"
 import { useAuth } from "@/contexts/auth-context"
 
+// Constants
+const CONSTANTS = {
+  // OHS Plans
+  OHS_PLAN_IDS: [1, 2, 3, 4, 5, 6, 7] as const,
+  DEFAULT_OHS_PLAN_ID: 1,
+  
+  // Image generation
+  IMAGE_GENERATION_DELAY: 100, // ms
+  CANVAS_SCALE: 3,
+  MIN_WINDOW_WIDTH: 1200,
+  BASE_WIDTH: 400,
+  PLAN_COLUMN_WIDTH: 180,
+  
+  // Coverage amounts
+  CANCER_COVERAGE_AMOUNT: 100000000, // 100 million MMK
+  LIFETIME_MULTIPLIER: 10, // Lifetime coverage = annual * 10
+  
+  // Styling
+  MAX_IMAGE_HEIGHT: '800px',
+  TABLE_MIN_WIDTH: '600px',
+  
+  // Tracking
+  TRACK_ACTION_TYPE: 'pdf_downloaded' as const, // Keep as pdf_downloaded for compatibility
+} as const
+
 interface ReportGenerationStepProps {
   clientData: ClientData
   productSelections: ProductSelections
   onNewQuote?: () => void
 }
 
+// Helper functions
+const getSelectedProductNames = (
+  productSelections: ProductSelections,
+  ohsPlans: OHSPlanWithPremium[]
+): string[] => {
+  return [
+    ...ohsPlans.map(plan => `OHS Plan ${plan.id}`),
+    ...(productSelections.universalLife ? [`Universal Life ${productSelections.universalLife.planId}`] : []),
+    ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
+    ...(productSelections.cancerRider ? ['Cancer Care'] : [])
+  ]
+}
+
+const calculateReportWidth = (plansCount: number): number => {
+  const calculatedWidth = CONSTANTS.BASE_WIDTH + (plansCount * CONSTANTS.PLAN_COLUMN_WIDTH)
+  return Math.max(CONSTANTS.MIN_WINDOW_WIDTH, calculatedWidth)
+}
 
 export default function ReportGenerationStep({ clientData, productSelections, onNewQuote }: ReportGenerationStepProps) {
   const { trackActivity } = useQuota()
@@ -48,7 +91,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   }
 
   // Import OHS plan details from actual data
-  const ohsPlansData = [1, 2, 3, 4, 5, 6, 7].map(planId => {
+  const ohsPlansData = CONSTANTS.OHS_PLAN_IDS.map(planId => {
     const coverage = getOHSCoverage(planId)
     return {
       id: planId,
@@ -73,7 +116,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   // If no OHS selected but other products are selected, show default Plan 1 for comparison
   const hasOtherProducts = productSelections.universalLife || productSelections.termLife || productSelections.cancerRider
   if (selectedOHSPlans.length === 0 && hasOtherProducts) {
-    const defaultPlan = ohsPlansData.find((p) => p.id === 1) // Use Plan 1 as default
+    const defaultPlan = ohsPlansData.find((p) => p.id === CONSTANTS.DEFAULT_OHS_PLAN_ID)
     const defaultPremium = 0 // Don't include in total since not selected
     selectedOHSPlans = [{ ...defaultPlan, premium: defaultPremium, isDefault: true } as OHSPlanWithPremium]
   }
@@ -90,8 +133,8 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     )
     totalPremium += universalLifePremium
     // Get the actual sum assured amount for display
-    const ulPlan = require("@/data/universal-life-premium-data").universalLifePlans.find(
-      (plan: any) => plan.planId === productSelections.universalLife!.planId
+    const ulPlan = universalLifePlans.find(
+      plan => plan.planId === productSelections.universalLife!.planId
     )
     universalLifeCoverage = ulPlan ? formatMMK(ulPlan.sumAssured) : ""
   }
@@ -124,7 +167,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     if (selectedOHSPlans.length > 0 && !generatedImageUrl) {
       generateImageInBackground()
     }
-  }, [])
+  }, [selectedOHSPlans.length]) // Only depend on length to avoid regenerating when premium changes
 
   // Cleanup blob URL on unmount
   useEffect(() => {
@@ -140,6 +183,8 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     // Get coverage values that are used in the table
     const ulCoverage = universalLifeCoverage
     const tlCoverage = termLifeCoverage
+    const cancerCoverageFormatted = formatMMK(CONSTANTS.CANCER_COVERAGE_AMOUNT)
+    const lifetimeMultiplier = CONSTANTS.LIFETIME_MULTIPLIER
     // Create the table HTML dynamically
     const tableHTML = `
       <div id="insurance-report-table" class="bg-white">
@@ -192,7 +237,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
                 </td>
                 ${selectedOHSPlans.map((plan) => `
                   <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${plan?.isDefault ? "—" : formatMMK((plan?.annualLimit || 0) * 10)}
+                    ${plan?.isDefault ? "—" : formatMMK((plan?.annualLimit || 0) * lifetimeMultiplier)}
                   </td>
                 `).join('')}
               </tr>
@@ -252,7 +297,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
                 </td>
                 ${selectedOHSPlans.map((plan) => `
                   <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${productSelections.cancerRider ? formatMMK(100000000) : "—"}
+                    ${productSelections.cancerRider ? cancerCoverageFormatted : "—"}
                   </td>
                 `).join('')}
               </tr>
@@ -598,21 +643,16 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     
     try {
       // Calculate dynamic width based on number of plans
-      const baseWidth = 400
-      const planColumnWidth = 180
-      const totalPlans = selectedOHSPlans.length
-      const calculatedWidth = baseWidth + (totalPlans * planColumnWidth)
-      const windowWidth = Math.max(1200, calculatedWidth)
-      
+      const windowWidth = calculateReportWidth(selectedOHSPlans.length)
       const customWidth = `${windowWidth}px`
       const { tempContainer, cleanup } = prepareReportHTML(true, customWidth)
       
       // Small delay to ensure styles are applied
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, CONSTANTS.IMAGE_GENERATION_DELAY))
       
       // Generate canvas
       const canvas = await html2canvas(tempContainer, {
-        scale: 3,
+        scale: CONSTANTS.CANVAS_SCALE,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
@@ -661,14 +701,9 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       URL.revokeObjectURL(url)
       
       // Track download activity
-      await trackActivity('pdf_downloaded', {
+      await trackActivity(CONSTANTS.TRACK_ACTION_TYPE, {
         clientName: clientData.name,
-        selectedProducts: [
-          ...productSelections.ohsPlans.map(id => `OHS Plan ${id}`),
-          ...(productSelections.universalLife ? [`Universal Life ${productSelections.universalLife.planId}`] : []),
-          ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
-          ...(productSelections.cancerRider ? ['Cancer Care'] : [])
-        ],
+        selectedProducts: getSelectedProductNames(productSelections, selectedOHSPlans),
         viewMethod: 'download',
         format: 'PNG'
       })
@@ -750,7 +785,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
                     src={generatedImageUrl} 
                     alt="Insurance Report Preview"
                     className="w-full h-auto"
-                    style={{ maxHeight: '800px', objectFit: 'contain' }}
+                    style={{ maxHeight: CONSTANTS.MAX_IMAGE_HEIGHT, objectFit: 'contain' }}
                   />
                 </div>
                 <div className="text-center mt-4">
