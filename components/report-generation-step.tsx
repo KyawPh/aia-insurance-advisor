@@ -510,8 +510,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         windowWidth: windowWidth, // Dynamic width based on number of plans
         imageTimeout: 0,
         allowTaint: true,
-        foreignObjectRendering: false,
-        letterRendering: true, // Better text rendering
+        foreignObjectRendering: false
       })
       
       // Clean up
@@ -537,12 +536,11 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       const blob = dataURLtoBlob(imageUrl)
       const blobUrl = URL.createObjectURL(blob)
       
-      // Try to open in new tab
-      const newTab = window.open(blobUrl, '_blank')
+      // Try to open in new tab - open blank page first
+      const newTab = window.open('', '_blank')
       
       if (newTab) {
-        // Successfully opened in new tab - write the HTML page
-        setTimeout(() => {
+        // Successfully opened in new tab - write the HTML page immediately
           newTab.document.write(`
           <!DOCTYPE html>
           <html lang="en">
@@ -647,11 +645,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           </body>
           </html>
         `);
-          newTab.document.close();
-          
-          // Clean up blob URL after a delay
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
-        }, 100)
+        newTab.document.close();
       } else {
         // Fallback if popup is blocked - show options to user
         const shouldDownload = confirm(
@@ -666,12 +660,15 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           link.click()
         }
         
-        // Clean up blob URL
-        URL.revokeObjectURL(blobUrl)
+        // We're using data URL in the new tab, so we can clean up blob URL
+        // But keep a small delay in case the download happens
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl)
+        }, 5000) // Clean up after 5 seconds
       }
       
       // Track PNG view/download activity
-      await trackActivity('png_downloaded', {
+      await trackActivity('pdf_downloaded', {
         clientName: clientData.name,
         selectedProducts: [
           ...productSelections.ohsPlans.map(id => `OHS Plan ${id}`),
@@ -679,7 +676,8 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           ...(productSelections.termLife ? [`Term Life ${productSelections.termLife.planId}`] : []),
           ...(productSelections.cancerRider ? ['Cancer Care'] : [])
         ],
-        viewMethod: newTab ? 'new_tab' : 'direct_download'
+        viewMethod: newTab ? 'new_tab' : 'direct_download',
+        format: 'PNG'
       })
       
       if (overlay.parentNode) {

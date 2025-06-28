@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, Suspense, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +13,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { User, Mail, Calendar, CreditCard, Clock, AlertCircle, CheckCircle2, Crown, TrendingUp, BarChart3, Download, Eye, Phone, AlertTriangle, Calendar as CalendarIcon, X } from "lucide-react"
+import { User, Mail, Calendar, CreditCard, Clock, AlertCircle, CheckCircle2, Crown, TrendingUp, BarChart3, Download, Eye, Phone, AlertTriangle, Calendar as CalendarIcon, X, LogOut } from "lucide-react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import AuthGuard from "@/components/auth/auth-guard"
@@ -66,7 +66,7 @@ function ProfileContent() {
   
   const [isLoading, setIsLoading] = useState(false)
   const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false)
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("quotes")
   const [firebaseUserData, setFirebaseUserData] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [quotesPerPage] = useState(10)
@@ -75,6 +75,7 @@ function ProfileContent() {
   const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>([])
   const [loadingUpgradeRequests, setLoadingUpgradeRequests] = useState(true)
   const [dismissedRequestId, setDismissedRequestId] = useState<string | null>(null)
+  const [loadingQuoteId, setLoadingQuoteId] = useState<string | null>(null)
 
   // Form state for profile editing
   const [profileForm, setProfileForm] = useState<UserProfile>({
@@ -155,7 +156,7 @@ function ProfileContent() {
 
     // Check for tab parameter in URL
     const tab = searchParams.get("tab")
-    if (tab && ["overview", "quotes", "analytics", "plans", "settings"].includes(tab)) {
+    if (tab && ["quotes", "analytics", "plans", "settings"].includes(tab)) {
       setActiveTab(tab)
       // Reset pagination when switching tabs
       if (tab === "quotes") {
@@ -249,41 +250,53 @@ function ProfileContent() {
   const getAnalytics = () => {
     const now = new Date()
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const daysInMonth = currentMonthEnd.getDate()
+    const daysPassed = now.getDate()
     
-    const last30Days = usageHistory.filter(item => {
-      const itemDate = new Date(item.timestamp)
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      return itemDate >= thirtyDaysAgo
-    })
+    // Guard against empty or undefined usageHistory
+    if (!usageHistory || usageHistory.length === 0) {
+      return {
+        totalQuotes: 0,
+        totalDownloads: 0,
+        totalViews: 0,
+        quotesByDay: {},
+        averageQuotesPerDay: 0,
+        currentMonth: now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        daysInMonth,
+        daysPassed
+      }
+    }
     
     const currentMonth = usageHistory.filter(item => {
       const itemDate = new Date(item.timestamp)
-      return itemDate >= currentMonthStart
+      return itemDate >= currentMonthStart && itemDate <= now
     })
 
-    const quotesByDay = last30Days.reduce((acc, item) => {
+    const quotesByDay = currentMonth.reduce((acc, item) => {
       const day = item.timestamp.toDateString()
       acc[day] = (acc[day] || 0) + (item.action === 'quote_generated' ? 1 : 0)
       return acc
     }, {} as Record<string, number>)
 
-    const totalQuotes = last30Days.filter(item => item.action === 'quote_generated').length
-    const totalDownloads = last30Days.filter(item => item.action === 'pdf_downloaded').length
-    const totalViews = last30Days.filter(item => item.action === 'report_viewed').length
-    const currentMonthQuotes = currentMonth.filter(item => item.action === 'quote_generated').length
+    const totalQuotes = currentMonth.filter(item => item.action === 'quote_generated').length
+    const totalDownloads = currentMonth.filter(item => item.action === 'pdf_downloaded').length
+    const totalViews = currentMonth.filter(item => item.action === 'report_viewed').length
 
     return {
       totalQuotes,
       totalDownloads, 
       totalViews,
       quotesByDay,
-      averageQuotesPerDay: totalQuotes / 30,
-      currentMonthQuotes
+      averageQuotesPerDay: daysPassed > 0 ? totalQuotes / daysPassed : 0,
+      currentMonth: now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      daysInMonth,
+      daysPassed
     }
   }
 
-  const analytics = getAnalytics()
+  const analytics = useMemo(() => getAnalytics(), [usageHistory])
+  const now = new Date()
 
   // Pagination logic for quote history
   const quoteGenerationHistory = usageHistory.filter(item => item.action === 'quote_generated')
@@ -308,16 +321,12 @@ function ProfileContent() {
   }
 
   const handleViewQuote = async (quoteItem: QuoteHistoryItem) => {
+    // Set loading state immediately
+    setLoadingQuoteId(quoteItem.id)
+    
     try {
-      // Track report view activity for analytics
-      await refreshQuota() // Make sure we have the latest quota data
-      
-      if (user) {
-        await QuotaService.trackActivity(user.uid, 'report_viewed', {
-          clientName: quoteItem.metadata.clientName,
-          selectedProducts: quoteItem.metadata.selectedProducts
-        })
-      }
+      // Refresh quota to ensure we have the latest data
+      await refreshQuota()
       
       // Reconstruct product selections from selectedProducts array
       const reconstructProductSelections = () => {
@@ -372,8 +381,14 @@ function ProfileContent() {
       
       // Navigate to main page and force it to step 3 (report page)
       router.push('/?view=true&step=3')
+      
+      // Clear loading state after navigation
+      setLoadingQuoteId(null)
     } catch (error) {
       console.error('Error viewing quote:', error)
+      
+      // Clear loading state on error
+      setLoadingQuoteId(null)
       // Show error using modern alert instead
       const alertDiv = document.createElement('div')
       alertDiv.className = 'fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-2'
@@ -434,23 +449,14 @@ function ProfileContent() {
                 <p className="text-xs sm:text-sm text-gray-500">Manage your account and quotes</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-              <Button
-                onClick={() => router.push("/")}
-                variant="outline"
-                className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
-              >
-                <span className="hidden sm:inline">Back to Dashboard</span>
-                <span className="sm:hidden">Dashboard</span>
-              </Button>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
-              >
-                Logout
-              </Button>
-            </div>
+            <Button
+              onClick={() => router.push("/")}
+              variant="outline"
+              className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
+            >
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Dashboard</span>
+            </Button>
           </div>
 
           {/* Success Messages */}
@@ -559,15 +565,8 @@ function ProfileContent() {
             {/* Right Column - Tabs */}
             <div className="lg:col-span-2">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                {/* TEMPORARY: Changed from grid-cols-5 to grid-cols-4 - Plans tab hidden */}
-                <TabsList className="w-full grid grid-cols-4 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg h-auto">
-                  <TabsTrigger
-                    value="overview"
-                    className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-1 sm:px-2"
-                  >
-                    <span className="hidden sm:inline">Overview</span>
-                    <span className="sm:hidden">Info</span>
-                  </TabsTrigger>
+                {/* TEMPORARY: Changed from grid-cols-5 to grid-cols-3 - Plans and Overview tabs hidden */}
+                <TabsList className="w-full grid grid-cols-3 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg h-auto">
                   <TabsTrigger
                     value="quotes"
                     className="rounded-md data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm text-xs sm:text-sm py-2 px-1 sm:px-2"
@@ -600,369 +599,6 @@ function ProfileContent() {
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">
-                  <div className="grid gap-4 sm:gap-6">
-                    {/* Quota Usage Card */}
-                    <Card className="shadow-md border-0">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <CardTitle className="text-lg font-medium">Current Plan</CardTitle>
-                            <CardDescription>Your subscription and quota usage</CardDescription>
-                          </div>
-                          <Badge className={`${getPlanColors(plan)?.primary.replace('text-', 'text-')} ${getPlanColors(plan)?.background.replace('bg-', 'bg-').replace('-50', '-100')} border-0`}>
-                            {getPlanByInternalId(plan)?.name || 'Unknown Plan'}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {quotaLoading && (
-                          <div className="text-center py-4">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto mb-2"></div>
-                            <p className="text-sm text-gray-600">Loading subscription status...</p>
-                          </div>
-                        )}
-                        
-                        {!quotaLoading && quota && (
-                          <>
-                        {/* TEMPORARY: Subscription status alerts hidden for promotional period
-                        Subscription Status Alerts
-                        {quota?.subscription?.isInGracePeriod && quota.subscription.gracePeriodEnd && (
-                          <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-[1px]">
-                            <div className="relative bg-white rounded-xl p-4">
-                              <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl" />
-                              <div className="relative flex items-start justify-between gap-4">
-                                <div className="flex gap-3">
-                                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
-                                    <AlertTriangle className="h-5 w-5 text-white" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900">Grace Period Active</h4>
-                                    <p className="text-sm text-gray-600 mt-1">
-                                      You have {quota.dailyQuotaLimit} quotes per day during your grace period.
-                                      <span className="block text-xs text-gray-500 mt-1">
-                                        Expires {quota.subscription.gracePeriodEnd?.toLocaleDateString()}
-                                      </span>
-                                    </p>
-                                  </div>
-                                </div>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white border-0 shadow-lg shadow-orange-200"
-                                  onClick={() => router.push("/profile?tab=plans")}
-                                >
-                                  Renew Now
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* TEMPORARY: Subscription expiry warnings hidden
-                        Expiry Warning (7 days before)
-                        {quota?.subscription?.subscriptionEnd && 
-                         quota.subscription.isActive && 
-                         !quota.subscription.isInGracePeriod && (
-                          (() => {
-                            const daysUntilExpiry = Math.ceil(
-                              (quota.subscription.subscriptionEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                            )
-                            
-                            if (daysUntilExpiry <= 7 && daysUntilExpiry > 0 && quota.subscription.subscriptionEnd) {
-                              return (
-                                <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 p-[1px]">
-                                  <div className="relative bg-white rounded-xl p-4">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl" />
-                                    <div className="relative flex items-start justify-between gap-4">
-                                      <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-400 rounded-lg flex items-center justify-center">
-                                          <CalendarIcon className="h-5 w-5 text-white" />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h4 className="font-semibold text-gray-900">Subscription Expires Soon</h4>
-                                          <p className="text-sm text-gray-600 mt-1">
-                                            {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''} remaining
-                                            <span className="block text-xs text-gray-500 mt-1">
-                                              Expires on {quota.subscription.subscriptionEnd.toLocaleDateString()}
-                                            </span>
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <Button 
-                                        size="sm" 
-                                        className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg shadow-yellow-200"
-                                        onClick={() => router.push("/profile?tab=plans")}
-                                      >
-                                        Renew Early
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )
-                            }
-                            return null
-                          })()
-                        )}
-                        */}
-                        
-                        <div className="flex justify-between items-center">
-                          <div>
-                            {quota?.subscription?.plan === 'free' ? (
-                              <>
-                                <p className="text-sm font-medium">Monthly Quota</p>
-                                <p className="text-2xl font-bold">{quotaRemaining}<span className="text-sm text-gray-500">/{quotaLimit}</span></p>
-                                <div className="space-y-1">
-                                  <p className="text-xs text-gray-500">quotes remaining this month</p>
-                                  <p className="text-xs text-blue-600">Resets on the 1st of each month</p>
-                                  {analytics.currentMonthQuotes !== quotaUsed && (
-                                    <p className="text-xs text-amber-600 mt-1">Syncing usage data...</p>
-                                  )}
-                                </div>
-                              </>
-                            ) : quota?.subscription?.isInGracePeriod ? (
-                              <>
-                                <p className="text-sm font-medium">Daily Grace Period Quota</p>
-                                <p className="text-2xl font-bold">{quota.dailyQuotaLimit - quota.dailyQuotaUsed}<span className="text-sm text-gray-500">/{quota.dailyQuotaLimit}</span></p>
-                                <div className="space-y-1">
-                                  <p className="text-xs text-gray-500">quotes remaining today</p>
-                                  <p className="text-xs text-orange-600">Resets daily at midnight</p>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-sm font-medium">Unlimited Plan</p>
-                                <div className="flex items-baseline">
-                                  <span className="text-2xl font-bold">∞</span>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-xs text-gray-500">unlimited quotes</p>
-                                  <p className="text-xs text-green-600">Active subscription</p>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            {quota?.subscription?.plan === 'free' ? (
-                              <>
-                                <p className="text-sm font-medium">{Math.round((quotaUsed / quotaLimit) * 100)}% used</p>
-                                <p className="text-xs text-gray-500">Monthly reset</p>
-                              </>
-                            ) : quota?.subscription?.isInGracePeriod ? (
-                              <>
-                                <p className="text-sm font-medium">{Math.round((quota.dailyQuotaUsed / quota.dailyQuotaLimit) * 100)}% used today</p>
-                                <p className="text-xs text-orange-600">
-                                  Grace period: {quota.subscription.gracePeriodEnd ? Math.ceil((quota.subscription.gracePeriodEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days left
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-sm font-medium">Active</p>
-                                <p className="text-xs text-gray-500">
-                                  {quota.subscription.autoRenew ? 'Auto-renews' : 'Expires'} {quota.subscription.subscriptionEnd?.toLocaleDateString()}
-                                </p>
-                                <Badge className="mt-1 bg-green-100 text-green-700 text-xs">
-                                  {(() => {
-                                    if (quota.subscription.subscriptionEnd) {
-                                      const now = new Date();
-                                      const end = quota.subscription.subscriptionEnd;
-                                      const diffTime = end.getTime() - now.getTime();
-                                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                      const diffMonths = Math.round(diffDays / 30);
-                                      
-                                      if (diffMonths >= 1) {
-                                        return `${diffMonths} ${diffMonths === 1 ? 'month' : 'months'}`;
-                                      } else if (diffDays >= 1) {
-                                        return `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
-                                      } else {
-                                        return 'Expires today';
-                                      }
-                                    }
-                                    return 'Active';
-                                  })()}
-                                </Badge>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Progress Bars */}
-                        {quota?.subscription?.plan === 'free' && (
-                          <Progress
-                            value={(quotaUsed / quotaLimit) * 100}
-                            className="h-2"
-                            indicatorClassName={quotaRemaining < 3 ? "bg-red-600" : quotaUsed / quotaLimit > 0.7 ? "bg-amber-500" : "bg-green-500"}
-                          />
-                        )}
-                        
-                        {quota?.subscription?.isInGracePeriod && (
-                          <Progress
-                            value={(quota.dailyQuotaUsed / quota.dailyQuotaLimit) * 100}
-                            className="h-2"
-                            indicatorClassName="bg-orange-500"
-                          />
-                        )}
-                        
-                        {/* TEMPORARY: Upgrade prompts hidden for promotional period
-                        Upgrade Prompts for Free Users
-                        {quota?.subscription?.plan === 'free' && (
-                          <div className="mt-4 space-y-3">
-                            {plans.filter(p => p.id !== 'free').map((planData) => (
-                              <div key={planData.id} className={`p-4 bg-gradient-to-r ${planData.colors.background} rounded-lg ${planData.colors.border}`}>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3">
-                                    <Crown className={`h-6 w-6 ${planData.colors.primary}`} />
-                                    <div>
-                                      <h4 className={`font-medium ${planData.colors.primary.replace('text-', 'text-').replace('-600', '-900')}`}>{planData.name}</h4>
-                                      <p className={`text-sm ${planData.colors.text}`}>{planData.description}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className={`text-lg font-bold ${planData.colors.primary}`}>
-                                      {planData.billingOptions?.[0] ? `${formatPriceMMK(planData.billingOptions[0].price)}` : 'Custom'}
-                                      <span className="text-sm">{planData.billingOptions?.[0] ? '/mo' : ' pricing'}</span>
-                                    </p>
-                                    <Button 
-                                      onClick={() => planData.billingOptions?.[0] ? handleUpgrade(planData.id, 'monthly') : router.push("/profile?tab=plans")} 
-                                      size="sm" 
-                                      className={`${planData.colors.button} ${planData.colors.buttonHover} mt-1`}
-                                    >
-                                      {planData.billingOptions?.[0] ? 'Upgrade' : 'Contact Sales'}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        */}
-                          </>
-                        )}
-
-                      </CardContent>
-                    </Card>
-
-                    {/* Latest Upgrade Request - Only show the most recent one */}
-                    {upgradeRequests.length > 0 && (() => {
-                      const latestRequest = upgradeRequests[0] // Already sorted by createdAt desc
-                      if (dismissedRequestId === latestRequest.id) return null
-                      
-                      return (
-                        <Card key={latestRequest.id} className={`shadow-md border-0 relative ${
-                          latestRequest.status === 'pending' ? 'bg-amber-50' :
-                          latestRequest.status === 'processing' ? 'bg-blue-50' :
-                          latestRequest.status === 'completed' ? 'bg-green-50' :
-                          'bg-red-50'
-                        }`}>
-                          <CardHeader className="pb-4">
-                            {/* Dismiss button */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-gray-200/50"
-                              onClick={() => setDismissedRequestId(latestRequest.id || '')}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                            <div className="flex items-center justify-between pr-8">
-                              <div className="flex items-center space-x-2">
-                                {latestRequest.status === 'pending' && <Clock className="h-5 w-5 text-amber-600" />}
-                                {latestRequest.status === 'processing' && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>}
-                                {latestRequest.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                                {latestRequest.status === 'rejected' && <AlertCircle className="h-5 w-5 text-red-600" />}
-                                <CardTitle className={`text-lg font-medium ${
-                                  latestRequest.status === 'pending' ? 'text-amber-900' :
-                                  latestRequest.status === 'processing' ? 'text-blue-900' :
-                                  latestRequest.status === 'completed' ? 'text-green-900' :
-                                  'text-red-900'
-                                }`}>
-                                  {latestRequest.status === 'pending' ? 'Payment Verification Pending' :
-                                   latestRequest.status === 'processing' ? 'Processing Your Upgrade' :
-                                   latestRequest.status === 'completed' ? 'Upgrade Completed' :
-                                   'Request Rejected'}
-                                </CardTitle>
-                              </div>
-                              <Badge variant="outline" className={`text-xs ${
-                                latestRequest.status === 'pending' ? 'border-amber-300 text-amber-700' :
-                                latestRequest.status === 'processing' ? 'border-blue-300 text-blue-700' :
-                                latestRequest.status === 'completed' ? 'border-green-300 text-green-700' :
-                                'border-red-300 text-red-700'
-                              }`}>
-                                {latestRequest.id?.slice(-6).toUpperCase()}
-                              </Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <span className="text-gray-600">Plan:</span>
-                                <p className="font-medium">{getBillingPeriodLabel(latestRequest.billingPeriod)}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Amount:</span>
-                                <p className="font-medium">{formatPriceMMK(latestRequest.amount)}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Payment Method:</span>
-                                <p className="font-medium capitalize">{latestRequest.paymentMethod.replace('_', ' ')}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Submitted:</span>
-                                <p className="font-medium">{latestRequest.createdAt.toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            {latestRequest.status === 'pending' && (
-                              <p className={`text-sm mt-3 text-amber-700`}>
-                                We'll verify your payment within 24 hours. Keep your payment receipt for reference.
-                              </p>
-                            )}
-                            {latestRequest.status === 'rejected' && latestRequest.notes && (
-                              <div className="mt-3 p-3 rounded-lg bg-gradient-to-r from-red-100 to-pink-100">
-                                <p className="text-sm text-red-900">
-                                  <span className="font-semibold">Rejection reason:</span> {latestRequest.notes}
-                                </p>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      )
-                    })()}
-
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <Card className="shadow-md border-0">
-                        <CardContent className="p-4 text-center">
-                          <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                          <p className="text-2xl font-bold">{analytics.totalQuotes}</p>
-                          <p className="text-xs text-gray-500">Quotes (30 days)</p>
-                          <p className="text-xs text-gray-400 mt-1">{analytics.currentMonthQuotes} this month</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="shadow-md border-0">
-                        <CardContent className="p-4 text-center">
-                          <Download className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                          <p className="text-2xl font-bold">{analytics.totalDownloads}</p>
-                          <p className="text-xs text-gray-500">Downloads</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="shadow-md border-0">
-                        <CardContent className="p-4 text-center">
-                          <Eye className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                          <p className="text-2xl font-bold">{analytics.totalViews}</p>
-                          <p className="text-xs text-gray-500">Views</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="shadow-md border-0">
-                        <CardContent className="p-4 text-center">
-                          <BarChart3 className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                          <p className="text-2xl font-bold">{analytics.averageQuotesPerDay.toFixed(1)}</p>
-                          <p className="text-xs text-gray-500">Avg/day</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                </TabsContent>
-
                 {/* Quote History Tab */}
                 <TabsContent value="quotes" className="space-y-6">
                   <Card className="shadow-md border-0">
@@ -983,18 +619,33 @@ function ProfileContent() {
                               <Table className={hasPremiumData ? "min-w-[700px]" : "min-w-[600px]"}>
                                 <TableHeader>
                                   <TableRow className="bg-gray-50">
+                                    <TableHead className="font-medium text-center w-16">Action</TableHead>
                                     <TableHead className="font-medium w-24">Date</TableHead>
                                     <TableHead className="font-medium w-32">Client</TableHead>
                                     {hasPremiumData && (
                                       <TableHead className="font-medium w-24 text-right">Premium</TableHead>
                                     )}
                                     <TableHead className="font-medium">Products</TableHead>
-                                    <TableHead className="font-medium text-center w-16">Action</TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                   {currentQuotes.map((item) => (
                                     <TableRow key={item.id} className="hover:bg-gray-50">
+                                      <TableCell className="text-center py-2">
+                                        <Button
+                                          onClick={() => handleViewQuote(item)}
+                                          variant="outline"
+                                          size="sm"
+                                          className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-7 px-2 text-xs"
+                                          disabled={loadingQuoteId === item.id}
+                                        >
+                                          {loadingQuoteId === item.id ? (
+                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600" />
+                                          ) : (
+                                            <Eye className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      </TableCell>
                                       <TableCell className="font-medium text-xs py-2">
                                         {new Date(item.timestamp).toLocaleDateString('en-US', { 
                                           month: '2-digit', 
@@ -1028,16 +679,6 @@ function ProfileContent() {
                                             </Badge>
                                           )) || <span className="text-gray-400 text-xs">No products</span>}
                                         </div>
-                                      </TableCell>
-                                      <TableCell className="text-center py-2">
-                                        <Button
-                                          onClick={() => handleViewQuote(item)}
-                                          variant="outline"
-                                          size="sm"
-                                          className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-7 px-2 text-xs"
-                                        >
-                                          <Eye className="h-3 w-3" />
-                                        </Button>
                                       </TableCell>
                                     </TableRow>
                                   ))}
@@ -1133,7 +774,7 @@ function ProfileContent() {
                 <TabsContent value="analytics" className="space-y-6">
                   <Card className="shadow-md border-0">
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-lg font-medium">Usage Analytics</CardTitle>
+                      <CardTitle className="text-lg font-medium">Usage Analytics - {analytics.currentMonth}</CardTitle>
                       <CardDescription>Detailed insights into your quote generation patterns</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -1146,7 +787,7 @@ function ProfileContent() {
                               <h4 className="font-medium text-green-900">Total Quotes</h4>
                             </div>
                             <p className="text-2xl font-bold text-green-600 mt-2">{analytics.totalQuotes}</p>
-                            <p className="text-sm text-green-700">Last 30 days</p>
+                            <p className="text-sm text-green-700">This Month</p>
                           </div>
                           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div className="flex items-center space-x-2">
@@ -1154,7 +795,7 @@ function ProfileContent() {
                               <h4 className="font-medium text-blue-900">Downloads</h4>
                             </div>
                             <p className="text-2xl font-bold text-blue-600 mt-2">{analytics.totalDownloads}</p>
-                            <p className="text-sm text-blue-700">PDF reports</p>
+                            <p className="text-sm text-blue-700">This Month</p>
                           </div>
                           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                             <div className="flex items-center space-x-2">
@@ -1162,24 +803,30 @@ function ProfileContent() {
                               <h4 className="font-medium text-purple-900">Report Views</h4>
                             </div>
                             <p className="text-2xl font-bold text-purple-600 mt-2">{analytics.totalViews}</p>
-                            <p className="text-sm text-purple-700">Total views</p>
+                            <p className="text-sm text-purple-700">This Month</p>
                           </div>
                         </div>
 
                         {/* Daily Average */}
                         <div className="p-4 bg-gray-50 rounded-lg">
-                          <h4 className="font-medium mb-2">Activity Summary</h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Average quotes per day:</span>
-                              <span className="font-medium ml-2">{analytics.averageQuotesPerDay.toFixed(1)}</span>
+                          <h4 className="font-medium mb-3">Activity Summary</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center">
+                              <span className="text-gray-600">Daily average this month:</span>
+                              <span className="font-medium sm:ml-2">{analytics.averageQuotesPerDay.toFixed(1)} quotes</span>
                             </div>
-                            <div>
+                            <div className="flex flex-col sm:flex-row sm:items-center">
+                              <span className="text-gray-600">Days elapsed:</span>
+                              <span className="font-medium sm:ml-2">{analytics.daysPassed} of {analytics.daysInMonth} days</span>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:col-span-2">
                               <span className="text-gray-600">Most active day:</span>
-                              <span className="font-medium ml-2">
+                              <span className="font-medium sm:ml-2">
                                 {Object.entries(analytics.quotesByDay).length > 0 
-                                  ? Object.entries(analytics.quotesByDay).reduce((a, b) => analytics.quotesByDay[a[0]] > analytics.quotesByDay[b[0]] ? a : b)[0]
-                                  : 'N/A'
+                                  ? new Date(Object.entries(analytics.quotesByDay).reduce((a, b) => 
+                                      analytics.quotesByDay[a[0]] > analytics.quotesByDay[b[0]] ? a : b
+                                    )[0]).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                                  : 'No activity yet'
                                 }
                               </span>
                             </div>
@@ -1192,17 +839,17 @@ function ProfileContent() {
                           <div className="flex justify-between items-center">
                             <div>
                               <p className="text-sm font-medium">Current Usage</p>
-                              <p className="text-xs text-gray-500">{quotaUsed} of {quotaLimit} quotes used</p>
+                              <p className="text-xs text-gray-500">{analytics.totalQuotes} of {quotaLimit} quotes used</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-medium">{Math.round((quotaUsed / quotaLimit) * 100)}% used</p>
-                              <p className="text-xs text-gray-500">Resets {quota?.resetDate?.toLocaleDateString()}</p>
+                              <p className="text-sm font-medium">{quotaLimit > 0 ? Math.round((analytics.totalQuotes / quotaLimit) * 100) : 0}% used</p>
+                              <p className="text-xs text-gray-500">Resets on {new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
                             </div>
                           </div>
                           <Progress
-                            value={(quotaUsed / quotaLimit) * 100}
+                            value={quotaLimit > 0 ? (analytics.totalQuotes / quotaLimit) * 100 : 0}
                             className="h-3"
-                            indicatorClassName={quotaRemaining < 3 ? "bg-red-600" : quotaUsed / quotaLimit > 0.7 ? "bg-amber-500" : "bg-green-500"}
+                            indicatorClassName={quotaLimit - analytics.totalQuotes < 3 ? "bg-red-600" : analytics.totalQuotes / quotaLimit > 0.7 ? "bg-amber-500" : "bg-green-500"}
                           />
                           
                           {/* Quota Warnings */}
@@ -1223,12 +870,12 @@ function ProfileContent() {
                                 </Button>
                               </div>
                             </div>
-                          ) : quota?.subscription?.plan === 'free' && quotaRemaining < 3 ? (
+                          ) : quota?.subscription?.plan === 'free' && (quotaLimit - analytics.totalQuotes) < 3 ? (
                             <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-100 to-pink-100 p-3">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-red-600" />
                                 <p className="text-sm text-red-900 font-medium">
-                                  Low quota: Only {quotaRemaining} {quotaRemaining === 1 ? 'quote' : 'quotes'} left
+                                  Low quota: Only {quotaLimit - analytics.totalQuotes} {(quotaLimit - analytics.totalQuotes) === 1 ? 'quote' : 'quotes'} left this month
                                 </p>
                                 <Button 
                                   size="sm" 
@@ -1522,6 +1169,32 @@ function ProfileContent() {
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                         </label>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Account Actions */}
+                  <Card className="shadow-md border-0">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-lg font-medium">Account Actions</CardTitle>
+                      <CardDescription>Manage your account</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
+                          <div>
+                            <h4 className="font-medium text-gray-900">Sign out of your account</h4>
+                            <p className="text-sm text-gray-600 mt-1">You'll need to sign in again to access your profile and quotes</p>
+                          </div>
+                          <Button
+                            onClick={handleLogout}
+                            variant="outline"
+                            className="border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 flex items-center gap-2"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

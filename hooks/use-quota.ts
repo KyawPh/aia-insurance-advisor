@@ -17,6 +17,8 @@ interface UseQuotaReturn {
   resetDate: Date | null
   plan: string
   isLowQuota: boolean
+  calendarMonthQuotesUsed: number
+  calendarMonthQuotesRemaining: number
 }
 
 export function useQuota(): UseQuotaReturn {
@@ -44,9 +46,15 @@ export function useQuota(): UseQuotaReturn {
       // Also check if quota needs reset
       await QuotaService.checkAndResetQuota(user.uid)
       
-      // Fetch usage history
-      const history = await QuotaService.getUsageHistory(user.uid, 20)
-      setUsageHistory(history)
+      // Fetch usage history - increased limit to capture full month data
+      try {
+        const history = await QuotaService.getUsageHistory(user.uid, 50)
+        setUsageHistory(history)
+      } catch (historyError) {
+        console.error('Error fetching usage history:', historyError)
+        // Continue without history rather than failing completely
+        setUsageHistory([])
+      }
     } catch (error) {
       console.error('Error fetching quota:', error)
       setError('Failed to load quota information')
@@ -118,6 +126,19 @@ export function useQuota(): UseQuotaReturn {
     }
   }
 
+  // Calculate calendar month quotes
+  const calendarMonthQuotesUsed = (() => {
+    const now = new Date()
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    
+    return usageHistory.filter(item => {
+      const itemDate = new Date(item.timestamp)
+      return itemDate >= currentMonthStart && itemDate <= now && item.action === 'quote_generated'
+    }).length
+  })()
+  
+  const calendarMonthQuotesRemaining = Math.max(0, (quota?.quotaLimit ?? 50) - calendarMonthQuotesUsed)
+
   return {
     quota,
     usageHistory,
@@ -134,10 +155,10 @@ export function useQuota(): UseQuotaReturn {
     plan: quota?.plan ?? 'free',
     isLowQuota: (() => {
       if (!quota) return false
-      if (quota.subscription.isInGracePeriod) {
-        return (quota.dailyQuotaLimit - quota.dailyQuotaUsed) <= 2
-      }
-      return quota.subscription.plan === 'free' && quota.quotaRemaining <= 2
-    })()
+      // Update to use calendar month for low quota check
+      return quota.subscription.plan === 'free' && calendarMonthQuotesRemaining <= 2
+    })(),
+    calendarMonthQuotesUsed,
+    calendarMonthQuotesRemaining
   }
 }

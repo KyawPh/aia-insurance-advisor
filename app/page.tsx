@@ -47,7 +47,7 @@ const STEPS = [
 
 function AIAInsuranceAdvisorContent() {
   const { user, logout } = useAuth()
-  const { quota, consumeQuota, isLowQuota, quotaRemaining, quotaUsed, quotaLimit, loading: quotaLoading } = useQuota()
+  const { quota, consumeQuota, isLowQuota, quotaRemaining, quotaUsed, quotaLimit, loading: quotaLoading, calendarMonthQuotesUsed, calendarMonthQuotesRemaining } = useQuota()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState(1)
@@ -382,7 +382,7 @@ function AIAInsuranceAdvisorContent() {
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-500">Monthly Quota:</span>
                       <span className={`font-medium ${isLowQuota ? 'text-red-600' : 'text-gray-700'}`}>
-                        {quotaRemaining}/{quotaLimit}
+                        {calendarMonthQuotesRemaining}/{quotaLimit}
                       </span>
                     </div>
                     {quota?.subscription?.isInGracePeriod && (
@@ -410,7 +410,7 @@ function AIAInsuranceAdvisorContent() {
             </DropdownMenu>
             
             {/* Next.js style quota warning badge - seamlessly blending with avatar */}
-            {!quotaLoading && isLowQuota && quotaRemaining > 0 && !isQuotaBadgeDismissed && (
+            {!quotaLoading && isLowQuota && calendarMonthQuotesRemaining > 0 && !isQuotaBadgeDismissed && (
               <div 
                 onClick={() => setIsQuotaBadgeDismissed(true)}
                 className="absolute left-7 top-1/2 transform -translate-y-1/2 
@@ -424,7 +424,7 @@ function AIAInsuranceAdvisorContent() {
                            flex items-center text-xs font-medium whitespace-nowrap 
                            cursor-pointer transition-colors"
               >
-                <span>{quotaRemaining} {quotaRemaining === 1 ? 'Quote' : 'Quotes'} Left This Month</span>
+                <span>{calendarMonthQuotesRemaining} {calendarMonthQuotesRemaining === 1 ? 'Quote' : 'Quotes'} Left This Month</span>
               </div>
             )}
             </div>
