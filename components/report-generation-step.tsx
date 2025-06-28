@@ -71,6 +71,193 @@ const calculateReportWidth = (plansCount: number): number => {
   return Math.max(CONSTANTS.MIN_WINDOW_WIDTH, calculatedWidth)
 }
 
+// Coverage type interface
+interface CoverageType {
+  title: string
+  myanmarTitle: string
+  getValue: (plan: OHSPlanWithPremium, ulCoverage?: string, tlCoverage?: string) => string
+}
+
+// Generate a coverage row
+const generateCoverageRow = (
+  coverage: CoverageType,
+  selectedOHSPlans: OHSPlanWithPremium[],
+  ulCoverage?: string,
+  tlCoverage?: string
+) => {
+  return `
+    <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+      <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
+        <div class="space-y-1">
+          <div>${coverage.title}</div>
+          <div class="text-xs text-gray-600">${coverage.myanmarTitle}</div>
+        </div>
+      </td>
+      ${selectedOHSPlans.map((plan) => `
+        <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
+          ${coverage.getValue(plan, ulCoverage, tlCoverage)}
+        </td>
+      `).join('')}
+    </tr>
+  `
+}
+
+// Generate report styles
+const generateReportStyles = () => {
+  return `
+    /* Reset and base font */
+    * {
+      box-sizing: border-box;
+    }
+    body, div, table, th, td {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+    
+    /* Myanmar text specific styling */
+    .myanmar-text, div:lang(my) {
+      font-family: "Padauk", "Pyidaungsu", "Myanmar3", "Noto Sans Myanmar", sans-serif !important;
+      line-height: 1.8 !important;
+    }
+    
+    /* Table structure */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+    
+    /* Preserve exact Tailwind padding values */
+    .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+    .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+    .py-5 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+    .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+    .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+    
+    /* Header cells specific padding - less top, more bottom */
+    th[colspan] {
+      padding: 0.75rem 1rem 1.75rem 1rem !important;
+      height: auto !important;
+      line-height: 1.5 !important;
+    }
+    th:not([colspan]) {
+      padding: 0.5rem 1rem 1.5rem 1rem !important;
+      height: auto !important;
+    }
+    
+    /* Data cells specific padding - less top, more bottom */
+    td {
+      padding: 0.25rem 1rem 1.25rem 1rem !important;
+      height: auto !important;
+      vertical-align: middle !important;
+    }
+    
+    /* Left column cells - with bilingual text */
+    td.bg-gray-50 {
+      padding: 0.25rem 1rem 1.25rem 1rem !important;
+      background-color: #f9fafb !important;
+      vertical-align: middle !important;
+    }
+    
+    /* Use flexbox for better vertical centering in cells */
+    td.text-center {
+      display: table-cell !important;
+      vertical-align: middle !important;
+      text-align: center !important;
+    }
+    
+    /* Ensure divs inside cells don't add extra spacing */
+    td > div, th > div {
+      line-height: inherit !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Specific fix for cells with space-y-1 class */
+    td > div.space-y-1, th > div.space-y-1 {
+      display: block !important;
+    }
+    
+    /* For value cells (not the left column), ensure center alignment */
+    td:not(.bg-gray-50):not(:first-child) {
+      text-align: center !important;
+    }
+    
+    /* Space between text lines in bilingual cells */
+    .space-y-1 > * + * { 
+      margin-top: 0.25rem !important; /* Original spacing */
+    }
+    
+    /* Ensure Myanmar text has proper line height */
+    div.text-xs {
+      line-height: 1.2 !important; /* Tighter line height to match original */
+    }
+    
+    /* Text sizing - matching Tailwind exactly */
+    .text-xs { 
+      font-size: 0.75rem !important; 
+      line-height: 1rem !important; 
+    }
+    .text-sm { 
+      font-size: 0.875rem !important; 
+      line-height: 1.25rem !important; 
+    }
+    .text-base { 
+      font-size: 1rem !important; 
+      line-height: 1.5rem !important; 
+    }
+    
+    /* Font weights */
+    .font-medium { font-weight: 500 !important; }
+    .font-semibold { font-weight: 600 !important; }
+    .font-bold { font-weight: 700 !important; }
+    
+    /* Colors */
+    .text-gray-600 { color: #4b5563 !important; }
+    .text-gray-800 { color: #1f2937 !important; }
+    .text-gray-900 { color: #111827 !important; }
+    .text-white { color: #ffffff !important; }
+    
+    /* Premium row styling */
+    .bg-gradient-to-r {
+      background: #fef2f2 !important;
+    }
+    
+    /* Premium row first cell - ensure left alignment */
+    tr.bg-gradient-to-r td:first-child {
+      text-align: left !important;
+    }
+    
+    /* Premium row cells - same asymmetric padding */
+    tr.bg-gradient-to-r td {
+      padding: 0.25rem 1rem 1.25rem 1rem !important;
+    }
+    
+    /* Red text for premium amounts */
+    .text-red-700 { color: #b91c1c !important; }
+    .font-bold.text-red-700 { 
+      font-weight: 700 !important;
+    }
+    
+    /* Table minimum widths */
+    .min-w-\\[200px\\] { min-width: 200px !important; }
+    .min-w-\\[120px\\] { min-width: 120px !important; }
+    
+    /* Flex layouts */
+    .flex { display: flex !important; }
+    .flex-col { flex-direction: column !important; }
+    .items-center { align-items: center !important; }
+    .justify-center { justify-content: center !important; }
+    .gap-1 { gap: 0.25rem !important; }
+    
+    /* Fix client info bar vertical alignment */
+    div[style*="grid"] > div {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  `
+}
+
 export default function ReportGenerationStep({ clientData, productSelections, onNewQuote }: ReportGenerationStepProps) {
   const { trackActivity } = useQuota()
   const { user } = useAuth()
@@ -178,6 +365,108 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     }
   }, [generatedImageUrl])
   
+  // Define coverage types
+  const getCoverageTypes = (
+    lifetimeMultiplier: number,
+    cancerCoverageFormatted: string,
+    productSelections: ProductSelections,
+    getColumnPremium: (premium: number) => number
+  ): CoverageType[] => [
+    {
+      title: 'Annual Hospitalization/Medical Coverage',
+      myanmarTitle: 'နှစ်စဉ်ဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ',
+      getValue: (plan) => plan?.isDefault ? "—" : formatMMK(plan?.annualLimit || 0)
+    },
+    {
+      title: 'Life Time Hospitalization/Medical Coverage',
+      myanmarTitle: 'တစ်သက်တာဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ',
+      getValue: (plan) => plan?.isDefault ? "—" : formatMMK((plan?.annualLimit || 0) * lifetimeMultiplier)
+    },
+    {
+      title: 'One Day Room Fees',
+      myanmarTitle: 'တစ်ရက်ဆေးရုံအခန်းခ',
+      getValue: (plan) => plan?.isDefault ? "—" : formatMMK(plan?.dailyLimit || 0)
+    },
+    {
+      title: 'Accidental Death Coverage',
+      myanmarTitle: 'မတော်တဆမှုကြောင့်သေဆုံးခြင်းခံစားခွင့်',
+      getValue: (plan) => plan?.isDefault ? "—" : formatMMK(plan?.accidentalDeath || 0)
+    },
+    {
+      title: 'Death Coverage',
+      myanmarTitle: 'သေဆုံးခြင်းခံစားခွင့် / TPD ခံစားခွင့်',
+      getValue: (plan, ulCoverage, tlCoverage) => ulCoverage || tlCoverage || "—"
+    },
+    {
+      title: 'Cancer Coverage',
+      myanmarTitle: 'ကင်ဆာအကာအကွယ်',
+      getValue: (plan) => productSelections.cancerRider ? cancerCoverageFormatted : "—"
+    }
+  ]
+
+  // Generate report header HTML
+  const generateReportHeader = (clientData: ClientData, age: number, insuranceAge: number, user: any) => {
+    return `
+      <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+        <div style="color: #dc2626; font-size: 24px; font-weight: bold;">AIA</div>
+        <div style="color: #374151; font-size: 18px;">Insurance Recommendation Report</div>
+      </div>
+      <div style="border-bottom: 2px solid #dc2626; margin-bottom: 20px;"></div>
+      
+      <!-- Client Information Bar matching the report style -->
+      <div style="background: linear-gradient(to right, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 6px 16px 18px 16px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 14px; align-items: center;">
+          <div style="line-height: 1.5;">
+            <span style="color: #6b7280;">Client:</span>
+            <span style="margin-left: 8px; font-weight: 500; color: #111827;">${clientData.name}</span>
+          </div>
+          <div style="line-height: 1.5;">
+            <span style="color: #6b7280;">Age:</span>
+            <span style="margin-left: 8px; font-weight: 500; color: #111827;">
+              ${age} years (Insurance Age: ${insuranceAge})
+            </span>
+          </div>
+          <div style="line-height: 1.5;">
+            <span style="color: #6b7280;">Gender:</span>
+            <span style="margin-left: 8px; font-weight: 500; color: #111827;">
+              ${clientData.gender === "male" ? "Male" : "Female"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  // Generate report footer HTML
+  const generateReportFooter = (user: any) => {
+    return `
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <p style="color: #6b7280; font-size: 10px; margin: 0;">Generated on: ${new Date().toLocaleDateString()}</p>
+            <p style="color: #6b7280; font-size: 10px; margin: 4px 0 0 0;">Generated by: ${user?.displayName || user?.email || 'Insurance Advisor'}</p>
+          </div>
+          <p style="color: #6b7280; font-size: 10px; margin: 0;">AIA Myanmar Insurance Advisory Services</p>
+        </div>
+      </div>
+    `
+  }
+
+  // Apply table styles
+  const applyTableStyles = (table: HTMLElement) => {
+    table.style.borderCollapse = 'collapse'
+    table.style.border = '1px solid #e5e7eb'
+  }
+
+  // Apply cell styles
+  const applyCellStyles = (cells: NodeListOf<Element>) => {
+    cells.forEach((cell) => {
+      const element = cell as HTMLElement
+      element.style.border = '1px solid #e5e7eb'
+      element.style.verticalAlign = 'middle'
+    })
+  }
+
   // Common function to prepare HTML for export
   const prepareReportHTML = (forPNG = false, customWidth?: string) => {
     // Get coverage values that are used in the table
@@ -185,6 +474,15 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     const tlCoverage = termLifeCoverage
     const cancerCoverageFormatted = formatMMK(CONSTANTS.CANCER_COVERAGE_AMOUNT)
     const lifetimeMultiplier = CONSTANTS.LIFETIME_MULTIPLIER
+    
+    // Get coverage types
+    const coverageTypes = getCoverageTypes(
+      lifetimeMultiplier,
+      cancerCoverageFormatted,
+      productSelections,
+      getColumnPremium
+    )
+    
     // Create the table HTML dynamically
     const tableHTML = `
       <div id="insurance-report-table" class="bg-white">
@@ -212,95 +510,7 @@ export default function ReportGenerationStep({ clientData, productSelections, on
               </tr>
             </thead>
             <tbody>
-              <!-- Annual Hospitalization/Medical Coverage -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>Annual Hospitalization/Medical Coverage</div>
-                    <div class="text-xs text-gray-600">နှစ်စဉ်ဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${plan?.isDefault ? "—" : formatMMK(plan?.annualLimit || 0)}
-                  </td>
-                `).join('')}
-              </tr>
-
-              <!-- Life Time Hospitalization/Medical Coverage -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>Life Time Hospitalization/Medical Coverage</div>
-                    <div class="text-xs text-gray-600">တစ်သက်တာဆေးကုသနိုင်မည့်ခံစားခွင့်ပမာဏ</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${plan?.isDefault ? "—" : formatMMK((plan?.annualLimit || 0) * lifetimeMultiplier)}
-                  </td>
-                `).join('')}
-              </tr>
-
-              <!-- One Day Room Fees -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>One Day Room Fees</div>
-                    <div class="text-xs text-gray-600">တစ်ရက်ဆေးရုံအခန်းခ</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${plan?.isDefault ? "—" : formatMMK(plan?.dailyLimit || 0)}
-                  </td>
-                `).join('')}
-              </tr>
-
-              <!-- Accidental Death Coverage -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>Accidental Death Coverage</div>
-                    <div class="text-xs text-gray-600">မတော်တဆမှုကြောင့်သေဆုံးခြင်းခံစားခွင့်</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${plan?.isDefault ? "—" : formatMMK(plan?.accidentalDeath || 0)}
-                  </td>
-                `).join('')}
-              </tr>
-
-              <!-- Death Coverage -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>Death Coverage</div>
-                    <div class="text-xs text-gray-600">သေဆုံးခြင်းခံစားခွင့် / TPD ခံစားခွင့်</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${ulCoverage || tlCoverage || "—"}
-                  </td>
-                `).join('')}
-              </tr>
-
-              <!-- Cancer Coverage -->
-              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td class="font-medium text-gray-800 border-r border-gray-200 py-3 text-sm bg-gray-50">
-                  <div class="space-y-1">
-                    <div>Cancer Coverage</div>
-                    <div class="text-xs text-gray-600">ကင်ဆာအကာအကွယ်</div>
-                  </div>
-                </td>
-                ${selectedOHSPlans.map((plan) => `
-                  <td class="text-center border-r border-gray-200 last:border-r-0 py-3 text-gray-900 text-sm">
-                    ${productSelections.cancerRider ? cancerCoverageFormatted : "—"}
-                  </td>
-                `).join('')}
-              </tr>
+              ${coverageTypes.map(coverage => generateCoverageRow(coverage, selectedOHSPlans, ulCoverage, tlCoverage)).join('')}
 
               <!-- Premium Payments -->
               <tr class="bg-gradient-to-r from-red-50 to-red-25 border-b-2 border-red-200">
@@ -340,21 +550,11 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         // Fix table styling for PDF rendering
         const table = clonedElement.querySelector('table')
         if (table) {
-          // Add explicit border styles
-          table.style.borderCollapse = 'collapse'
-          table.style.border = '1px solid #e5e7eb'
+          applyTableStyles(table)
           
-          // Fix all cells to have proper borders only
+          // Fix all cells to have proper borders
           const cells = clonedElement.querySelectorAll('th, td')
-          cells.forEach((cell) => {
-            const element = cell as HTMLElement
-            element.style.border = '1px solid #e5e7eb'
-            element.style.verticalAlign = 'middle'
-            // Don't touch padding - let CSS classes handle it
-            
-            // Keep the original div structure and spacing
-            // Don't hide any text - show both English and Myanmar
-          })
+          applyCellStyles(cells)
           
           // Fix header cells
           const headerCells = clonedElement.querySelectorAll('th')
@@ -364,13 +564,10 @@ export default function ReportGenerationStep({ clientData, productSelections, on
             element.style.color = 'white'
             element.style.fontWeight = 'bold'
             
-            // Don't override padding - preserve original classes
-            
             // Special styling for full-width header/footer cells
             if (element.getAttribute('colspan')) {
               element.style.textAlign = 'center'
               element.style.verticalAlign = 'middle'
-              // Preserve original padding
               if (element.closest('tr')?.classList.contains('from-gray-700')) {
                 element.style.backgroundColor = '#374151'
               }
@@ -386,13 +583,12 @@ export default function ReportGenerationStep({ clientData, productSelections, on
               element.style.color = 'white'
               element.style.textAlign = 'center'
               element.style.verticalAlign = 'middle'
-              // Preserve original padding
             }
           })
           
           // Fix specific row backgrounds
           const rows = clonedElement.querySelectorAll('tr')
-          rows.forEach((row, index) => {
+          rows.forEach((row) => {
             const element = row as HTMLElement
             if (element.classList.contains('bg-gradient-to-r')) {
               element.style.background = '#fef2f2'
@@ -406,7 +602,6 @@ export default function ReportGenerationStep({ clientData, productSelections, on
           leftColumnCells.forEach((cell) => {
             const element = cell as HTMLElement
             element.style.textAlign = 'left'
-            // Preserve original padding
           })
         }
         
@@ -420,208 +615,19 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         
         // Add comprehensive styles to match the original display
         const styleTag = document.createElement('style')
-        styleTag.innerHTML = `
-          /* Reset and base font */
-          * {
-            box-sizing: border-box;
-          }
-          body, div, table, th, td {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-          }
-          
-          /* Myanmar text specific styling */
-          .myanmar-text, div:lang(my) {
-            font-family: "Padauk", "Pyidaungsu", "Myanmar3", "Noto Sans Myanmar", sans-serif !important;
-            line-height: 1.8 !important;
-          }
-          
-          /* Table structure */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: auto;
-          }
-          
-          /* Preserve exact Tailwind padding values */
-          .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
-          .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-          .py-5 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
-          .px-3 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
-          .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
-          .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
-          
-          /* Header cells specific padding - less top, more bottom */
-          th[colspan] {
-            padding: 0.75rem 1rem 1.75rem 1rem !important;
-            height: auto !important;
-            line-height: 1.5 !important;
-          }
-          th:not([colspan]) {
-            padding: 0.5rem 1rem 1.5rem 1rem !important;
-            height: auto !important;
-          }
-          
-          /* Data cells specific padding - less top, more bottom */
-          td {
-            padding: 0.25rem 1rem 1.25rem 1rem !important;
-            height: auto !important;
-            vertical-align: middle !important;
-          }
-          
-          /* Left column cells - with bilingual text */
-          td.bg-gray-50 {
-            padding: 0.25rem 1rem 1.25rem 1rem !important;
-            background-color: #f9fafb !important;
-            vertical-align: middle !important;
-          }
-          
-          /* Use flexbox for better vertical centering in cells */
-          td.text-center {
-            display: table-cell !important;
-            vertical-align: middle !important;
-            text-align: center !important;
-          }
-          
-          /* Ensure divs inside cells don't add extra spacing */
-          td > div, th > div {
-            line-height: inherit !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          
-          /* Specific fix for cells with space-y-1 class */
-          td > div.space-y-1, th > div.space-y-1 {
-            display: block !important;
-          }
-          
-          /* For value cells (not the left column), ensure center alignment */
-          td:not(.bg-gray-50):not(:first-child) {
-            text-align: center !important;
-          }
-          
-          /* Space between text lines in bilingual cells */
-          .space-y-1 > * + * { 
-            margin-top: 0.25rem !important; /* Original spacing */
-          }
-          
-          /* Ensure Myanmar text has proper line height */
-          div.text-xs {
-            line-height: 1.2 !important; /* Tighter line height to match original */
-          }
-          
-          /* Text sizing - matching Tailwind exactly */
-          .text-xs { 
-            font-size: 0.75rem !important; 
-            line-height: 1rem !important; 
-          }
-          .text-sm { 
-            font-size: 0.875rem !important; 
-            line-height: 1.25rem !important; 
-          }
-          .text-base { 
-            font-size: 1rem !important; 
-            line-height: 1.5rem !important; 
-          }
-          
-          /* Font weights */
-          .font-medium { font-weight: 500 !important; }
-          .font-semibold { font-weight: 600 !important; }
-          .font-bold { font-weight: 700 !important; }
-          
-          /* Colors */
-          .text-gray-600 { color: #4b5563 !important; }
-          .text-gray-800 { color: #1f2937 !important; }
-          .text-gray-900 { color: #111827 !important; }
-          .text-white { color: #ffffff !important; }
-          
-          /* Premium row styling */
-          .bg-gradient-to-r {
-            background: #fef2f2 !important;
-          }
-          
-          /* Premium row first cell - ensure left alignment */
-          tr.bg-gradient-to-r td:first-child {
-            text-align: left !important;
-          }
-          
-          /* Premium row cells - same asymmetric padding */
-          tr.bg-gradient-to-r td {
-            padding: 0.25rem 1rem 1.25rem 1rem !important;
-          }
-          
-          /* Red text for premium amounts */
-          .text-red-700 { color: #b91c1c !important; }
-          .font-bold.text-red-700 { 
-            font-weight: 700 !important;
-          }
-          
-          /* Table minimum widths */
-          .min-w-\\[200px\\] { min-width: 200px !important; }
-          .min-w-\\[120px\\] { min-width: 120px !important; }
-          
-          /* Flex layouts */
-          .flex { display: flex !important; }
-          .flex-col { flex-direction: column !important; }
-          .items-center { align-items: center !important; }
-          .justify-center { justify-content: center !important; }
-          .gap-1 { gap: 0.25rem !important; }
-          
-          /* Fix client info bar vertical alignment */
-          div[style*="grid"] > div {
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-        `
+        styleTag.innerHTML = generateReportStyles()
         tempContainer.appendChild(styleTag)
         
         // Add header
         const header = document.createElement('div')
-        header.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
-            <div style="color: #dc2626; font-size: 24px; font-weight: bold;">AIA</div>
-            <div style="color: #374151; font-size: 18px;">Insurance Recommendation Report</div>
-          </div>
-          <div style="border-bottom: 2px solid #dc2626; margin-bottom: 20px;"></div>
-          
-          <!-- Client Information Bar matching the report style -->
-          <div style="background: linear-gradient(to right, #fef2f2, #ffffff); border: 1px solid #fecaca; border-radius: 8px; padding: 6px 16px 18px 16px; margin-bottom: 20px;">
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 14px; align-items: center;">
-              <div style="line-height: 1.5;">
-                <span style="color: #6b7280;">Client:</span>
-                <span style="margin-left: 8px; font-weight: 500; color: #111827;">${clientData.name}</span>
-              </div>
-              <div style="line-height: 1.5;">
-                <span style="color: #6b7280;">Age:</span>
-                <span style="margin-left: 8px; font-weight: 500; color: #111827;">
-                  ${age} years (Insurance Age: ${insuranceAge})
-                </span>
-              </div>
-              <div style="line-height: 1.5;">
-                <span style="color: #6b7280;">Gender:</span>
-                <span style="margin-left: 8px; font-weight: 500; color: #111827;">
-                  ${clientData.gender === "male" ? "Male" : "Female"}
-                </span>
-              </div>
-            </div>
-          </div>
-        `
+        header.innerHTML = generateReportHeader(clientData, age, insuranceAge, user)
         
         tempContainer.appendChild(header)
         tempContainer.appendChild(clonedElement)
         
         // Add footer
         const footer = document.createElement('div')
-        footer.innerHTML = `
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-              <div>
-                <p style="color: #6b7280; font-size: 10px; margin: 0;">Generated on: ${new Date().toLocaleDateString()}</p>
-                <p style="color: #6b7280; font-size: 10px; margin: 4px 0 0 0;">Generated by: ${user?.displayName || user?.email || 'Insurance Advisor'}</p>
-              </div>
-              <p style="color: #6b7280; font-size: 10px; margin: 0;">AIA Myanmar Insurance Advisory Services</p>
-            </div>
-          </div>
-        `
+        footer.innerHTML = generateReportFooter(user)
         tempContainer.appendChild(footer)
         
     document.body.appendChild(tempContainer)
