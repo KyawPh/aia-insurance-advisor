@@ -9,9 +9,7 @@ A modern, professional insurance advisory tool built for independent insurance a
 
 ## 📋 Overview
 
-Insurance Advisor Pro is an independent platform that streamlines the insurance consultation process through an intuitive 3-step wizard. It provides accurate premium calculations and generates professional PNG reports for customers.
-
-**⚠️ Disclaimer**: This is an independent tool created for insurance agents. It is not affiliated with, endorsed by, or sponsored by AIA or any other insurance company.
+Insurance Advisor Pro is a professional platform that streamlines the insurance consultation process through an intuitive 3-step wizard. Designed specifically for AIA insurance products in Myanmar, it provides accurate premium calculations and generates professional PNG reports for customers.
 
 ## ✨ Key Features
 
@@ -343,7 +341,7 @@ This project is proprietary software developed for independent insurance advisor
 
 ## ⚖️ Legal Notice
 
-This is an independent tool and is not affiliated with, endorsed by, or sponsored by AIA or any other insurance company. All insurance calculations should be verified with official documentation.
+This tool is designed specifically for AIA insurance products. All insurance calculations should be verified with official documentation.
 
 ## 📞 Support
 

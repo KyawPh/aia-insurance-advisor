@@ -291,7 +291,7 @@ export default function HomePage() {
                 © {new Date().getFullYear()} Insurance Advisor Pro by Advisory Solutions
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Independent tool for insurance agents - Not affiliated with AIA
+                Professional tool for insurance agents
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
