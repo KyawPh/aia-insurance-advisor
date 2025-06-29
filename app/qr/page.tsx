@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation"
 export default function QRCodePage() {
   const router = useRouter()
   const [qrCodeUrl, setQrCodeUrl] = useState("")
-  const siteUrl = "https://aia-advisor.web.app/"
+  const siteUrl = "https://insurance-advisor.web.app/"
 
   useEffect(() => {
     // Generate QR code using qr-server.com API
@@ -149,21 +149,6 @@ export default function QRCodePage() {
             </div>
           </Card>
 
-          {/* Meeting Helper Text */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="mt-8 p-4 max-w-md mx-auto"
-          >
-            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-lg shadow-lg">
-              <h3 className="font-medium mb-2">For AIA Meeting Participants</h3>
-              <p className="text-sm opacity-90">
-                Simply point your phone camera at the QR code above to instantly access our Insurance Advisor platform. 
-                No app download required!
-              </p>
-            </div>
-          </motion.div>
 
           {/* Footer */}
           <div className="mt-12 text-center text-xs text-gray-500">

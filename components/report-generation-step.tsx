@@ -408,7 +408,8 @@ export default function ReportGenerationStep({ clientData, productSelections, on
   const generateReportHeader = (clientData: ClientData, age: number, insuranceAge: number, user: any) => {
     return `
       <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
-        <div style="color: #dc2626; font-size: 24px; font-weight: bold;">AIA</div>
+        <img src="${window.location.origin}/logo-r.png" alt="AIA Logo" style="height: 40px; width: auto; 
+     object-fit: contain; vertical-align: middle; margin-bottom: -16px;" />
         <div style="color: #374151; font-size: 18px;">Insurance Recommendation Report</div>
       </div>
       <div style="border-bottom: 2px solid #dc2626; margin-bottom: 20px;"></div>
