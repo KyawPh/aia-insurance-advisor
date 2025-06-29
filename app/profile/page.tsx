@@ -446,7 +446,7 @@ function ProfileContent() {
               <div className="h-6 sm:h-8 w-px bg-gray-300"></div>
               <div>
                 <h1 className="text-lg sm:text-xl lg:text-2xl font-light text-gray-900">My Profile</h1>
-                <p className="text-xs sm:text-sm text-gray-500">Manage your account and quotes</p>
+                <p className="text-xs sm:text-sm text-gray-500">Manage your account</p>
               </div>
             </div>
             <Button

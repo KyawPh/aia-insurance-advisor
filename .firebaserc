@@ -2,6 +2,13 @@
   "projects": {
     "default": "aia-advisor-b5760"
   },
-  "targets": {},
+  "targets": {
+    "aia-advisor-b5760": {
+      "hosting": {
+        "beta": ["aia-advisor-b5760"],
+        "stable": ["insurance-advisor"]
+      }
+    }
+  },
   "etags": {}
 }
