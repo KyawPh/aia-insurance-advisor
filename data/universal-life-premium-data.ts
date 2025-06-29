@@ -2,9 +2,9 @@
 
 export interface UniversalLifePremiumRow {
   ageGroup: string
-  minimum: number
-  default: number
-  maximum: number
+  twenty_years: number
+  fifteen_years: number
+  ten_years: number
 }
 
 export interface UniversalLifePlan {
@@ -16,86 +16,86 @@ export interface UniversalLifePlan {
 
 // Universal Life Premium Table - 1000L (Annual premiums in MMK)
 export const universalLife1000L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 667000, default: 1334000, maximum: 1666000 },
-  { ageGroup: "20-24", minimum: 715000, default: 1429000, maximum: 1818000 },
-  { ageGroup: "25-29", minimum: 770000, default: 1429000, maximum: 1818000 },
-  { ageGroup: "30-34", minimum: 910000, default: 1667000, maximum: 2222000 },
-  { ageGroup: "35-39", minimum: 1112000, default: 2000000, maximum: 2500000 },
-  { ageGroup: "40-44", minimum: 1667000, default: 2858000, maximum: 3333000 },
-  { ageGroup: "45-49", minimum: 2500000, default: 4000000, maximum: 5000000 },
-  { ageGroup: "50-54", minimum: 4000000, default: 5000000, maximum: 6666000 },
-  { ageGroup: "55-59", minimum: 6668000, default: 10000000, maximum: 12500000 },
-  { ageGroup: "60-64", minimum: 10000000, default: 13334000, maximum: 20000000 }
+  { ageGroup: "0-19", twenty_years: 667000, fifteen_years: 1334000, ten_years: 1666000 },
+  { ageGroup: "20-24", twenty_years: 715000, fifteen_years: 1429000, ten_years: 1818000 },
+  { ageGroup: "25-29", twenty_years: 770000, fifteen_years: 1429000, ten_years: 1818000 },
+  { ageGroup: "30-34", twenty_years: 910000, fifteen_years: 1667000, ten_years: 2222000 },
+  { ageGroup: "35-39", twenty_years: 1112000, fifteen_years: 2000000, ten_years: 2500000 },
+  { ageGroup: "40-44", twenty_years: 1667000, fifteen_years: 2858000, ten_years: 3333000 },
+  { ageGroup: "45-49", twenty_years: 2500000, fifteen_years: 4000000, ten_years: 5000000 },
+  { ageGroup: "50-54", twenty_years: 4000000, fifteen_years: 5000000, ten_years: 6666000 },
+  { ageGroup: "55-59", twenty_years: 6668000, fifteen_years: 10000000, ten_years: 12500000 },
+  { ageGroup: "60-64", twenty_years: 10000000, fifteen_years: 13334000, ten_years: 20000000 }
 ]
 
 // Universal Life Premium Table - 1500L (Annual premiums in MMK)
 export const universalLife1500L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 1005000, default: 2001000, maximum: 2499000 },
-  { ageGroup: "20-24", minimum: 1072000, default: 2144000, maximum: 2727000 },
-  { ageGroup: "25-29", minimum: 1155000, default: 2144000, maximum: 2727000 },
-  { ageGroup: "30-34", minimum: 1365000, default: 2501000, maximum: 3333000 },
-  { ageGroup: "35-39", minimum: 1668000, default: 3000000, maximum: 3750000 },
-  { ageGroup: "40-44", minimum: 2500500, default: 4287000, maximum: 4999000 },
-  { ageGroup: "45-49", minimum: 3750000, default: 6000000, maximum: 7500000 },
-  { ageGroup: "50-54", minimum: 6000000, default: 7500000, maximum: 9999000 },
-  { ageGroup: "55-59", minimum: 10002000, default: 15000000, maximum: 18750000 },
-  { ageGroup: "60-64", minimum: 15000000, default: 20001000, maximum: 30000000 }
+  { ageGroup: "0-19", twenty_years: 1005000, fifteen_years: 2001000, ten_years: 2499000 },
+  { ageGroup: "20-24", twenty_years: 1072000, fifteen_years: 2144000, ten_years: 2727000 },
+  { ageGroup: "25-29", twenty_years: 1155000, fifteen_years: 2144000, ten_years: 2727000 },
+  { ageGroup: "30-34", twenty_years: 1365000, fifteen_years: 2501000, ten_years: 3333000 },
+  { ageGroup: "35-39", twenty_years: 1668000, fifteen_years: 3000000, ten_years: 3750000 },
+  { ageGroup: "40-44", twenty_years: 2500500, fifteen_years: 4287000, ten_years: 4999000 },
+  { ageGroup: "45-49", twenty_years: 3750000, fifteen_years: 6000000, ten_years: 7500000 },
+  { ageGroup: "50-54", twenty_years: 6000000, fifteen_years: 7500000, ten_years: 9999000 },
+  { ageGroup: "55-59", twenty_years: 10002000, fifteen_years: 15000000, ten_years: 18750000 },
+  { ageGroup: "60-64", twenty_years: 15000000, fifteen_years: 20001000, ten_years: 30000000 }
 ]
 
 // Universal Life Premium Table - 2000L (Annual premiums in MMK)
 export const universalLife2000L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 1334000, default: 2668000, maximum: 3332000 },
-  { ageGroup: "20-24", minimum: 1430000, default: 2858000, maximum: 3636000 },
-  { ageGroup: "25-29", minimum: 1540000, default: 2858000, maximum: 3636000 },
-  { ageGroup: "30-34", minimum: 1820000, default: 3334000, maximum: 4444000 },
-  { ageGroup: "35-39", minimum: 2224000, default: 4000000, maximum: 5000000 },
-  { ageGroup: "40-44", minimum: 3334000, default: 5716000, maximum: 6666000 },
-  { ageGroup: "45-49", minimum: 5000000, default: 8000000, maximum: 10000000 },
-  { ageGroup: "50-54", minimum: 8000000, default: 10000000, maximum: 13332000 },
-  { ageGroup: "55-59", minimum: 13336000, default: 20000000, maximum: 25000000 },
-  { ageGroup: "60-64", minimum: 20000000, default: 26668000, maximum: 40000000 }
+  { ageGroup: "0-19", twenty_years: 1334000, fifteen_years: 2668000, ten_years: 3332000 },
+  { ageGroup: "20-24", twenty_years: 1430000, fifteen_years: 2858000, ten_years: 3636000 },
+  { ageGroup: "25-29", twenty_years: 1540000, fifteen_years: 2858000, ten_years: 3636000 },
+  { ageGroup: "30-34", twenty_years: 1820000, fifteen_years: 3334000, ten_years: 4444000 },
+  { ageGroup: "35-39", twenty_years: 2224000, fifteen_years: 4000000, ten_years: 5000000 },
+  { ageGroup: "40-44", twenty_years: 3334000, fifteen_years: 5716000, ten_years: 6666000 },
+  { ageGroup: "45-49", twenty_years: 5000000, fifteen_years: 8000000, ten_years: 10000000 },
+  { ageGroup: "50-54", twenty_years: 8000000, fifteen_years: 10000000, ten_years: 13332000 },
+  { ageGroup: "55-59", twenty_years: 13336000, fifteen_years: 20000000, ten_years: 25000000 },
+  { ageGroup: "60-64", twenty_years: 20000000, fifteen_years: 26668000, ten_years: 40000000 }
 ]
 
 // Universal Life Premium Table - 3000L (Annual premiums in MMK)
 export const universalLife3000L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 2001000, default: 4002000, maximum: 4998000 },
-  { ageGroup: "20-24", minimum: 2145000, default: 4287000, maximum: 5454000 },
-  { ageGroup: "25-29", minimum: 2310000, default: 4287000, maximum: 5454000 },
-  { ageGroup: "30-34", minimum: 2730000, default: 5001000, maximum: 6666000 },
-  { ageGroup: "35-39", minimum: 3336000, default: 6000000, maximum: 7500000 },
-  { ageGroup: "40-44", minimum: 5001000, default: 8574000, maximum: 9999000 },
-  { ageGroup: "45-49", minimum: 7500000, default: 12000000, maximum: 15000000 },
-  { ageGroup: "50-54", minimum: 12000000, default: 15000000, maximum: 19998000 },
-  { ageGroup: "55-59", minimum: 20004000, default: 30000000, maximum: 37500000 },
-  { ageGroup: "60-64", minimum: 30000000, default: 40002000, maximum: 60000000 }
+  { ageGroup: "0-19", twenty_years: 2001000, fifteen_years: 4002000, ten_years: 4998000 },
+  { ageGroup: "20-24", twenty_years: 2145000, fifteen_years: 4287000, ten_years: 5454000 },
+  { ageGroup: "25-29", twenty_years: 2310000, fifteen_years: 4287000, ten_years: 5454000 },
+  { ageGroup: "30-34", twenty_years: 2730000, fifteen_years: 5001000, ten_years: 6666000 },
+  { ageGroup: "35-39", twenty_years: 3336000, fifteen_years: 6000000, ten_years: 7500000 },
+  { ageGroup: "40-44", twenty_years: 5001000, fifteen_years: 8574000, ten_years: 9999000 },
+  { ageGroup: "45-49", twenty_years: 7500000, fifteen_years: 12000000, ten_years: 15000000 },
+  { ageGroup: "50-54", twenty_years: 12000000, fifteen_years: 15000000, ten_years: 19998000 },
+  { ageGroup: "55-59", twenty_years: 20004000, fifteen_years: 30000000, ten_years: 37500000 },
+  { ageGroup: "60-64", twenty_years: 30000000, fifteen_years: 40002000, ten_years: 60000000 }
 ]
 
 // Universal Life Premium Table - 4000L (Annual premiums in MMK)
 export const universalLife4000L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 2668000, default: 5336000, maximum: 6664000 },
-  { ageGroup: "20-24", minimum: 2860000, default: 5716000, maximum: 7272000 },
-  { ageGroup: "25-29", minimum: 3080000, default: 5716000, maximum: 7272000 },
-  { ageGroup: "30-34", minimum: 3640000, default: 6668000, maximum: 8888000 },
-  { ageGroup: "35-39", minimum: 4448000, default: 8000000, maximum: 10000000 },
-  { ageGroup: "40-44", minimum: 6668000, default: 11432000, maximum: 13332000 },
-  { ageGroup: "45-49", minimum: 10000000, default: 16000000, maximum: 20000000 },
-  { ageGroup: "50-54", minimum: 16000000, default: 20000000, maximum: 26664000 },
-  { ageGroup: "55-59", minimum: 26672000, default: 40000000, maximum: 50000000 },
-  { ageGroup: "60-64", minimum: 40000000, default: 53336000, maximum: 80000000 }
+  { ageGroup: "0-19", twenty_years: 2668000, fifteen_years: 5336000, ten_years: 6664000 },
+  { ageGroup: "20-24", twenty_years: 2860000, fifteen_years: 5716000, ten_years: 7272000 },
+  { ageGroup: "25-29", twenty_years: 3080000, fifteen_years: 5716000, ten_years: 7272000 },
+  { ageGroup: "30-34", twenty_years: 3640000, fifteen_years: 6668000, ten_years: 8888000 },
+  { ageGroup: "35-39", twenty_years: 4448000, fifteen_years: 8000000, ten_years: 10000000 },
+  { ageGroup: "40-44", twenty_years: 6668000, fifteen_years: 11432000, ten_years: 13332000 },
+  { ageGroup: "45-49", twenty_years: 10000000, fifteen_years: 16000000, ten_years: 20000000 },
+  { ageGroup: "50-54", twenty_years: 16000000, fifteen_years: 20000000, ten_years: 26664000 },
+  { ageGroup: "55-59", twenty_years: 26672000, fifteen_years: 40000000, ten_years: 50000000 },
+  { ageGroup: "60-64", twenty_years: 40000000, fifteen_years: 53336000, ten_years: 80000000 }
 ]
 
 // Universal Life Premium Table - 5000L (Annual premiums in MMK)
 export const universalLife5000L: UniversalLifePremiumRow[] = [
-  { ageGroup: "0-19", minimum: 3336000, default: 6670000, maximum: 8330000 },
-  { ageGroup: "20-24", minimum: 3575000, default: 7145000, maximum: 9090000 },
-  { ageGroup: "25-29", minimum: 3850000, default: 7145000, maximum: 9090000 },
-  { ageGroup: "30-34", minimum: 4550000, default: 8335000, maximum: 11110000 },
-  { ageGroup: "35-39", minimum: 5560000, default: 10000000, maximum: 12500000 },
-  { ageGroup: "40-44", minimum: 8335000, default: 14290000, maximum: 16665000 },
-  { ageGroup: "45-49", minimum: 12500000, default: 20000000, maximum: 25000000 },
-  { ageGroup: "50-54", minimum: 20000000, default: 25000000, maximum: 33330000 },
-  { ageGroup: "55-59", minimum: 33340000, default: 50000000, maximum: 62500000 },
-  { ageGroup: "60-64", minimum: 50000000, default: 66670000, maximum: 100000000 }
+  { ageGroup: "0-19", twenty_years: 3336000, fifteen_years: 6670000, ten_years: 8330000 },
+  { ageGroup: "20-24", twenty_years: 3575000, fifteen_years: 7145000, ten_years: 9090000 },
+  { ageGroup: "25-29", twenty_years: 3850000, fifteen_years: 7145000, ten_years: 9090000 },
+  { ageGroup: "30-34", twenty_years: 4550000, fifteen_years: 8335000, ten_years: 11110000 },
+  { ageGroup: "35-39", twenty_years: 5560000, fifteen_years: 10000000, ten_years: 12500000 },
+  { ageGroup: "40-44", twenty_years: 8335000, fifteen_years: 14290000, ten_years: 16665000 },
+  { ageGroup: "45-49", twenty_years: 12500000, fifteen_years: 20000000, ten_years: 25000000 },
+  { ageGroup: "50-54", twenty_years: 20000000, fifteen_years: 25000000, ten_years: 33330000 },
+  { ageGroup: "55-59", twenty_years: 33340000, fifteen_years: 50000000, ten_years: 62500000 },
+  { ageGroup: "60-64", twenty_years: 50000000, fifteen_years: 66670000, ten_years: 100000000 }
 ]
 
 // Combined Universal Life Plans Data
@@ -132,9 +132,13 @@ export const getUniversalLifePremiumFromTable = (planId: string, healthTier: str
   
   // Get the premium for the specific health tier
   switch (healthTier.toLowerCase()) {
-    case "minimum": return row.minimum
-    case "default": return row.default
-    case "maximum": return row.maximum
+    case "20 years": return row.twenty_years
+    case "15 years": return row.fifteen_years
+    case "10 years": return row.ten_years
+    // Legacy support for old names
+    case "minimum": return row.twenty_years
+    case "default": return row.fifteen_years
+    case "maximum": return row.ten_years
     default: return 0
   }
 }

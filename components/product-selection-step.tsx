@@ -73,7 +73,7 @@ export default function ProductSelectionStep({
     id: plan.planId,
     name: plan.name,
     sumAssured: plan.sumAssured,
-    healthTiers: ["Minimum", "Default", "Maximum"]
+    healthTiers: ["20 years", "15 years", "10 years"]
   }))
 
   // Use real Term Life plans from data file

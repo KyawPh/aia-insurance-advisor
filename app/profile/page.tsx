@@ -349,7 +349,7 @@ function ProfileContent() {
             const planId = product.replace('Universal Life ', '')
             selections.universalLife = {
               planId: planId,
-              healthTier: 'standard' // Default since we don't store this
+              healthTier: '15 years' // Default to middle tier since we don't store this
             }
           } else if (product.startsWith('Term Life ')) {
             const planId = product.replace('Term Life ', '')
