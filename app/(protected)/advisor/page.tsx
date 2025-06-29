@@ -10,7 +10,6 @@ import { User, LogOut, Settings } from "lucide-react"
 import ClientDataStep from "@/components/client-data-step"
 import ProductSelectionStep from "@/components/product-selection-step"
 import ReportGenerationStep from "@/components/report-generation-step"
-import AuthGuard from "@/components/auth/auth-guard"
 import { QuotaGuard } from "@/components/quota-guard"
 import { useAuth } from "@/contexts/auth-context"
 import { useQuota } from "@/hooks/use-quota"
@@ -226,8 +225,7 @@ function InsuranceAdvisorProContent() {
 
 
   return (
-    <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 p-3 sm:p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-100 p-3 sm:p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header - Clean and Minimal */}
           <div className="text-center mb-8 sm:mb-12">
@@ -444,7 +442,6 @@ function InsuranceAdvisorProContent() {
         </div>
       )}
     </div>
-    </AuthGuard>
   )
 }
 

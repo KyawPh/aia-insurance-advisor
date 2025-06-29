@@ -34,12 +34,12 @@ export default function PrivacyPolicyPage() {
             </div>
           </div>
           <Button
-            onClick={() => router.push("/auth/login?tab=signup")}
+            onClick={() => router.push("/")}
             variant="outline"
             className="border-gray-200 text-gray-600 hover:bg-gray-50"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Signup
+            Back to Home
           </Button>
         </div>
 

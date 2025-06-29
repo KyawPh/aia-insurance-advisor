@@ -18,7 +18,7 @@ export default function LoginPage() {
   // Redirect authenticated users
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/")
+      router.replace("/advisor")
     }
   }, [user, loading, router])
 

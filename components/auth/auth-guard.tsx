@@ -27,7 +27,7 @@ export default function AuthGuard({ children, requireAuth = false }: AuthGuardPr
 
     // Redirect authenticated users away from login page
     if (pathname === "/auth/login" && user) {
-      router.replace("/")
+      router.replace("/advisor")
       return
     }
   }, [user, loading, requireAuth, router, pathname])

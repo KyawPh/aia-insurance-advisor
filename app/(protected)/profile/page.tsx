@@ -318,7 +318,7 @@ function ProfileContent() {
     // Clear session and start fresh
     clearSession()
     // Navigate to main page with new quote parameter to force fresh start
-    router.push("/?new=true")
+    router.push("/advisor?new=true")
   }
 
   const handleViewQuote = async (quoteItem: QuoteHistoryItem) => {
@@ -381,7 +381,7 @@ function ProfileContent() {
       sessionStorage.setItem('viewQuoteData', JSON.stringify(quoteData))
       
       // Navigate to main page and force it to step 3 (report page)
-      router.push('/?view=true&step=3')
+      router.push('/advisor?view=true&step=3')
       
       // Clear loading state after navigation
       setLoadingQuoteId(null)
@@ -435,7 +435,7 @@ function ProfileContent() {
           {/* Header with AIA Logo */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-gray-200">
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="relative h-14 w-28 sm:h-16 sm:w-32 cursor-pointer" onClick={() => router.push("/")}>
+              <div className="relative h-14 w-28 sm:h-16 sm:w-32 cursor-pointer" onClick={() => router.push("/advisor")}>
                 <Image
                   src="/logo.png"
                   alt="IA Pro Logo"
@@ -451,7 +451,7 @@ function ProfileContent() {
               </div>
             </div>
             <Button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/advisor")}
               variant="outline"
               className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
             >
