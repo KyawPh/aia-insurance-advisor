@@ -229,7 +229,7 @@ function InsuranceAdvisorProContent() {
         <div className="max-w-4xl mx-auto">
           {/* Header - Clean and Minimal */}
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-red-900 mb-2">Insurance Advisor Pro</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-red-900 mb-2">Insurance Advisor</h1>
             <p className="text-sm sm:text-base text-gray-500">Professional Advisory Tool for Insurance Agents</p>
           </div>
 
@@ -333,7 +333,7 @@ function InsuranceAdvisorProContent() {
 
         {/* Footer */}
         <div className="text-center text-xs sm:text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} Insurance Advisor Pro</p>
+          <p>© {new Date().getFullYear()} Insurance Advisor</p>
           <div className="flex justify-center items-center gap-2 sm:gap-4 mt-2 flex-wrap">
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">
               Privacy Policy

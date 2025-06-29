@@ -64,7 +64,7 @@ export default function QRCodePage() {
           className="text-center"
         >
           <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-2">
-            Insurance Advisor Pro
+            Insurance Advisor
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             Professional Advisory Tool for Insurance Agents
@@ -78,7 +78,7 @@ export default function QRCodePage() {
                 {qrCodeUrl ? (
                   <img
                     src={qrCodeUrl}
-                    alt="QR Code for Insurance Advisor Pro"
+                    alt="QR Code for Insurance Advisor"
                     className="w-full max-w-[300px] h-auto mx-auto"
                   />
                 ) : (
@@ -109,7 +109,7 @@ export default function QRCodePage() {
 
                 <div className="space-y-2 text-sm text-gray-600">
                   <p>Scan this QR code with your phone camera to access:</p>
-                  <p className="font-medium text-gray-900">Insurance Advisor Pro Platform</p>
+                  <p className="font-medium text-gray-900">Insurance Advisor Platform</p>
                 </div>
 
                 {/* Features */}

@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/auth-context'
 import { ErrorBoundary } from '@/components/error-boundary'
 
 export const metadata: Metadata = {
-  title: 'Insurance Advisor Pro',
+  title: 'Insurance Advisor',
   description: 'Professional insurance advisory tool for agents - Designed for AIA products in Myanmar',
   generator: 'Advisory Solutions',
 }

@@ -67,7 +67,7 @@ export default function HomePage() {
             <div className="flex items-center">
               <Image
                 src="/logo.png"
-                alt="Insurance Advisor Pro"
+                alt="Insurance Advisor"
                 width={48}
                 height={48}
                 className="drop-shadow-sm sm:w-16 sm:h-16"
@@ -269,7 +269,7 @@ export default function HomePage() {
             Ready to Streamline Your Insurance Advisory?
           </h2>
           <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-8 px-4">
-            Join insurance agents who trust Insurance Advisor Pro for accurate calculations
+            Join insurance agents who trust Insurance Advisor for accurate calculations
           </p>
           <Button
             size="lg"
@@ -288,7 +288,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-center md:text-left">
               <p className="text-xs sm:text-sm">
-                © {new Date().getFullYear()} Insurance Advisor Pro by Advisory Solutions
+                © {new Date().getFullYear()} Insurance Advisor by Advisory Solutions
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 Professional tool for insurance agents

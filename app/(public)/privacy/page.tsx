@@ -233,7 +233,7 @@ export default function PrivacyPolicyPage() {
                 <section>
                   <h2 className="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">11. Contact Us</h2>
                   <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    If you have questions about this Privacy Policy or how we handle your personal information on Insurance Advisor Pro, please contact us:
+                    If you have questions about this Privacy Policy or how we handle your personal information on Insurance Advisor, please contact us:
                   </p>
                   <ul className="list-disc list-inside text-sm sm:text-base text-gray-700 space-y-1 sm:space-y-2 ml-2 sm:ml-4 mt-2 sm:mt-3">
                     <li>Email: kyaw.debug@gmail.com</li>

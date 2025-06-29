@@ -61,7 +61,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">1. Acceptance of Terms</h2>
                   <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    By accessing and using Insurance Advisor Pro ("Service"), an independent platform for calculating insurance premiums, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                    By accessing and using Insurance Advisor ("Service"), an independent platform for calculating insurance premiums, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
                   </p>
                 </section>
 
@@ -70,7 +70,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">2. Description of Service</h2>
                   <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 sm:mb-4">
-                    Insurance Advisor Pro is an independent digital platform that provides:
+                    Insurance Advisor is an independent digital platform that provides:
                   </p>
                   <ul className="list-disc list-inside text-sm sm:text-base text-gray-700 space-y-1 sm:space-y-2 ml-2 sm:ml-4">
                     <li>Insurance product recommendations based on client data</li>

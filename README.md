@@ -1,4 +1,4 @@
-# Insurance Advisor Pro
+# Insurance Advisor
 
 A modern, professional insurance advisory tool built for independent insurance agents specializing in AIA products in Myanmar.
 
@@ -9,7 +9,7 @@ A modern, professional insurance advisory tool built for independent insurance a
 
 ## 📋 Overview
 
-Insurance Advisor Pro is a professional platform that streamlines the insurance consultation process through an intuitive 3-step wizard. Designed specifically for AIA insurance products in Myanmar, it provides accurate premium calculations and generates professional PNG reports for customers.
+Insurance Advisor is a professional platform that streamlines the insurance consultation process through an intuitive 3-step wizard. Designed specifically for AIA insurance products in Myanmar, it provides accurate premium calculations and generates professional PNG reports for customers.
 
 ## ✨ Key Features
 
@@ -320,7 +320,7 @@ See `scripts/README.md` for detailed admin documentation.
 
 ## 🔮 Recent Updates
 
-- ✅ Complete rebranding to Insurance Advisor Pro
+- ✅ Complete rebranding to Insurance Advisor
 - ✅ Enhanced security implementation
 - ✅ Multi-site deployment (beta/stable)
 - ✅ PNG report generation (replaced PDF)

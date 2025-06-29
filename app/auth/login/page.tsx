@@ -67,16 +67,16 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto w-20 h-20 relative mb-3">
+          <div className="mx-auto w-32 h-32 relative mb-3">
             <Image
-              src="/logo.png"
-              alt="Insurance Advisor Pro Logo"
+              src="/logo-l.png"
+              alt="Insurance Advisor Logo"
               fill
               style={{ objectFit: "contain" }}
               className="drop-shadow-md"
             />
           </div>
-          <h1 className="text-lg font-medium text-gray-900">Insurance Advisor Pro</h1>
+          <h1 className="text-lg font-medium text-gray-900">Insurance Advisor</h1>
         </div>
 
         {/* Error Message */}
@@ -125,7 +125,7 @@ export default function LoginPage() {
       
       {/* Footer */}
       <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-400">
-        <p>© {new Date().getFullYear()} Insurance Advisor Pro</p>
+        <p>© {new Date().getFullYear()} Insurance Advisor</p>
         <div className="flex justify-center items-center gap-2 mt-1">
           <Link href="/privacy" className="hover:text-gray-600 transition-colors">
             Privacy Policy
