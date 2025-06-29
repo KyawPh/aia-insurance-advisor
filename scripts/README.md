@@ -16,7 +16,9 @@ npm install
 1. Go to your Firebase Console
 2. Navigate to Project Settings > Service Accounts
 3. Click "Generate New Private Key" to download your service account JSON file
-4. Save the file in the `scripts` directory (e.g., `serviceAccountKey.json`)
+4. Save the file as `serviceAccountKey.json` in the `scripts` directory
+5. **IMPORTANT**: Never commit this file to version control. It's already added to `.gitignore`
+6. Use `serviceAccountKey.example.json` as a template if needed
 
 ### 3. Set Up Environment Variables
 

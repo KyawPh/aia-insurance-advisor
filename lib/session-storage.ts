@@ -3,6 +3,7 @@
  */
 
 import type { ClientData } from "@/types/insurance"
+import { logger } from "@/lib/logger"
 
 const SESSION_KEYS = {
   CLIENT_DATA: 'aia_session_client_data',
@@ -23,9 +24,9 @@ export function generateSessionId(): string {
 export function saveClientData(clientData: ClientData): void {
   try {
     localStorage.setItem(SESSION_KEYS.CLIENT_DATA, JSON.stringify(clientData))
-    console.log('✅ Client data saved')
+    logger.debug('Client data saved')
   } catch (error) {
-    console.error('❌ Failed to save client data:', error)
+    logger.error('Failed to save client data', error)
   }
 }
 
@@ -40,11 +41,11 @@ export function loadClientData(): ClientData | null {
     const stored = localStorage.getItem(SESSION_KEYS.CLIENT_DATA)
     if (stored) {
       const parsed = JSON.parse(stored)
-      console.log('✅ Client data restored')
+      logger.debug('Client data restored')
       return parsed
     }
   } catch (error) {
-    console.error('❌ Failed to load client data:', error)
+    logger.error('Failed to load client data', error)
   }
   return null
 }
@@ -72,9 +73,9 @@ export function clearSession(): void {
     Object.values(SESSION_KEYS).forEach(key => {
       localStorage.removeItem(key)
     })
-    console.log('✅ Session cleared')
+    logger.debug('Session cleared')
   } catch (error) {
-    console.error('❌ Failed to clear session:', error)
+    logger.error('Failed to clear session', error)
   }
 }
 
@@ -84,7 +85,7 @@ export function clearSession(): void {
 export function initializeSession(): string {
   const sessionId = generateSessionId()
   localStorage.setItem(SESSION_KEYS.SESSION_ID, sessionId)
-  console.log(`✅ New session initialized: ${sessionId}`)
+  logger.debug('New session initialized', { sessionId: sessionId.substring(0, 8) + '...' })
   return sessionId
 }
 

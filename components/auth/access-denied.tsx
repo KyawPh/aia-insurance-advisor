@@ -23,7 +23,7 @@ export default function AccessDenied() {
             <div className="relative h-16 w-32 sm:h-20 sm:w-40">
               <Image
                 src="/logo.png"
-                alt="AIA Logo"
+                alt="IA Pro Logo"
                 fill
                 style={{ objectFit: "contain" }}
                 className="drop-shadow-sm"

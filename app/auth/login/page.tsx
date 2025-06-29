@@ -6,6 +6,8 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { GoogleIcon } from "@/components/ui/google-icon"
+import Image from "next/image"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -65,10 +67,16 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto w-14 h-14 bg-red-600 rounded-lg flex items-center justify-center mb-3">
-            <span className="text-white text-xl font-bold">AIA</span>
+          <div className="mx-auto w-20 h-20 relative mb-3">
+            <Image
+              src="/logo.png"
+              alt="Insurance Advisor Pro Logo"
+              fill
+              style={{ objectFit: "contain" }}
+              className="drop-shadow-md"
+            />
           </div>
-          <h1 className="text-lg font-medium text-gray-900">Insurance Advisor</h1>
+          <h1 className="text-lg font-medium text-gray-900">Insurance Advisor Pro</h1>
         </div>
 
         {/* Error Message */}
@@ -102,15 +110,31 @@ export default function LoginPage() {
 
         {/* Terms */}
         <p className="text-xs text-gray-400 text-center">
-          By continuing, you agree to our{" "}
-          <a href="/terms" className="hover:text-gray-600">
-            Terms
-          </a>{" "}
-          &{" "}
-          <a href="/privacy" className="hover:text-gray-600">
-            Privacy
-          </a>
+          By continuing, you agree to
+          <br />
+          our{" "}
+          <Link href="/terms" className="hover:text-gray-600 underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="hover:text-gray-600 underline">
+            Privacy Policy
+          </Link>
         </p>
+      </div>
+      
+      {/* Footer */}
+      <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-400">
+        <p>© {new Date().getFullYear()} Insurance Advisor Pro</p>
+        <div className="flex justify-center items-center gap-2 mt-1">
+          <Link href="/privacy" className="hover:text-gray-600 transition-colors">
+            Privacy Policy
+          </Link>
+          <span className="text-gray-300">•</span>
+          <Link href="/terms" className="hover:text-gray-600 transition-colors">
+            Terms of Service
+          </Link>
+        </div>
       </div>
     </div>
   )

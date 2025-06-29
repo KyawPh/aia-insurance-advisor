@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { CheckCircle2, Copy, Phone, CreditCard, Building2, AlertCircle } from "lucide-react"
 import { UpgradeService } from "@/lib/upgrade-service"
 import { getBillingOption, formatPriceMMK, getBillingPeriodLabel } from "@/data/subscription-plans-data"
+import { logger } from "@/lib/logger"
 
 interface UpgradePaymentDialogProps {
   open: boolean
@@ -73,7 +74,7 @@ export function UpgradePaymentDialog({
       if (onSuccess) onSuccess()
     } catch (error) {
       // Show error in a modern way instead of alert
-      console.error("Failed to submit upgrade request:", error)
+      logger.error("Failed to submit upgrade request", error)
     } finally {
       setIsSubmitting(false)
     }

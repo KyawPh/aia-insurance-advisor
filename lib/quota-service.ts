@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { subscriptionPlans, getPlanByInternalId } from '@/data/subscription-plans-data'
+import { logger } from '@/lib/logger'
 
 export interface SubscriptionStatus {
   plan: 'free' | 'unlimited'
@@ -95,12 +96,12 @@ export class QuotaService {
       
       // If user document doesn't exist, create it with default quota
       if (!userDoc.exists()) {
-        console.log('User document not found, creating default quota for:', userId)
+        logger.debug('User document not found, creating default quota')
         await this.createDefaultUserQuota(userId)
         userDoc = await getDoc(doc(db, 'users', userId))
         
         if (!userDoc.exists()) {
-          console.warn('Failed to create user document, returning default quota')
+          logger.warn('Failed to create user document, returning default quota')
           return this.getDefaultQuota()
         }
       }
@@ -213,7 +214,7 @@ export class QuotaService {
         resetDate: subscriptionEnd || now
       }
     } catch (error) {
-      console.error('Error fetching user quota:', error)
+      logger.error('Error fetching user quota', error)
       return this.getDefaultQuota()
     }
   }
@@ -327,7 +328,7 @@ export class QuotaService {
       
       return true
     } catch (error) {
-      console.error('Error consuming quota:', error)
+      logger.error('Error consuming quota', error)
       return false
     }
   }
@@ -352,7 +353,7 @@ export class QuotaService {
         quotaConsumed: doc.data().quotaConsumed || 1
       }))
     } catch (error) {
-      console.error('Error fetching usage history:', error)
+      logger.error('Error fetching usage history', error)
       return []
     }
   }
@@ -375,7 +376,7 @@ export class QuotaService {
 
       return true
     } catch (error) {
-      console.error('Error tracking activity:', error)
+      logger.error('Error tracking activity', error)
       return false
     }
   }
@@ -391,7 +392,7 @@ export class QuotaService {
         await this.resetQuota(userId)
       }
     } catch (error) {
-      console.error('Error checking quota reset:', error)
+      logger.error('Error checking quota reset', error)
     }
   }
 
@@ -406,7 +407,7 @@ export class QuotaService {
         'subscription.quotaResetDate': Timestamp.fromDate(nextResetDate)
       })
     } catch (error) {
-      console.error('Error resetting quota:', error)
+      logger.error('Error resetting quota', error)
     }
   }
 
@@ -444,7 +445,7 @@ export class QuotaService {
 
       return true
     } catch (error) {
-      console.error('Error purchasing extra quota:', error)
+      logger.error('Error purchasing extra quota', error)
       return false
     }
   }
@@ -511,7 +512,7 @@ export class QuotaService {
         newSubscriptionEnd: subscriptionEnd
       }
     } catch (error) {
-      console.error('Error upgrading plan:', error)
+      logger.error('Error upgrading plan', error)
       return { success: false }
     }
   }

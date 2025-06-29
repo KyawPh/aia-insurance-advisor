@@ -11,6 +11,7 @@ import type { ClientData } from "@/types/insurance"
 import { calculateAge, formatDateInput } from "@/utils/calculations"
 import { saveClientData } from "@/lib/session-storage"
 import { motion } from "framer-motion"
+import { sanitizeName, sanitizeDate } from "@/lib/sanitize"
 
 interface ClientDataStepProps {
   clientData: ClientData
@@ -25,6 +26,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
 
   const handleDateChange = (value: string) => {
     const formatted = formatDateInput(value)
+    // formatDateInput already handles the formatting and validation
     setClientData({ ...clientData, dateOfBirth: formatted })
 
     // Clear age input when DOB is entered
@@ -124,7 +126,7 @@ export default function ClientDataStep({ clientData, setClientData, onNext }: Cl
           <Input
             id="name"
             value={clientData.name}
-            onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
+            onChange={(e) => setClientData({ ...clientData, name: sanitizeName(e.target.value) })}
             placeholder="Enter client's full name"
             autoComplete="name"
             tabIndex={1}

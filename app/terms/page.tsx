@@ -17,10 +17,10 @@ export default function TermsOfServicePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
           <div className="flex items-center space-x-4">
-            <div className="relative h-10 w-20 sm:h-12 sm:w-24">
+            <div className="relative h-14 w-28 sm:h-16 sm:w-32">
               <Image
                 src="/logo.png"
-                alt="AIA Logo"
+                alt="IA Pro Logo"
                 fill
                 style={{ objectFit: "contain" }}
                 className="drop-shadow-sm"
@@ -55,10 +55,19 @@ export default function TermsOfServicePage() {
             </CardHeader>
             <CardContent className="prose prose-gray max-w-none">
               <div className="space-y-8">
+                {/* Disclaimer */}
+                <div className="p-6 bg-amber-50 rounded-lg border border-amber-200">
+                  <h2 className="text-lg font-medium text-amber-900 mb-2">Independent Platform Notice</h2>
+                  <p className="text-amber-800">
+                    This is an <strong>independent tool</strong> created for AIA insurance agents. 
+                    This platform operates independently and is not affiliated with, endorsed by, or sponsored by AIA. 
+                    All calculations and recommendations should be verified with official AIA documentation.
+                  </p>
+                </div>
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">1. Acceptance of Terms</h2>
                   <p className="text-gray-700 leading-relaxed">
-                    By accessing and using the AIA Insurance Advisor platform ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                    By accessing and using Insurance Advisor Pro ("Service"), an independent platform for calculating insurance premiums, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
                   </p>
                 </section>
 
@@ -67,11 +76,11 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">2. Description of Service</h2>
                   <p className="text-gray-700 leading-relaxed mb-4">
-                    AIA Insurance Advisor is a digital platform that provides:
+                    Insurance Advisor Pro is an independent digital platform that provides:
                   </p>
                   <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
                     <li>Insurance product recommendations based on client data</li>
-                    <li>Premium calculations for AIA insurance products</li>
+                    <li>Premium calculations for insurance products (currently supporting AIA products)</li>
                     <li>Quote generation and management tools</li>
                     <li>Client data management capabilities</li>
                   </ul>
@@ -107,7 +116,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">5. Limitations of Liability</h2>
                   <p className="text-gray-700 leading-relaxed">
-                    The information provided by this platform is for guidance purposes only. While we strive for accuracy, premium calculations and product recommendations should be verified with official AIA documentation. AIA and the platform developers are not liable for any decisions made based solely on the information provided by this tool.
+                    The information provided by this platform is for guidance purposes only. While we strive for accuracy, all premium calculations and product recommendations must be verified with official AIA documentation. This is an independent tool, and neither AIA nor the platform developer is liable for any decisions made based solely on the information provided by this tool. Users must independently verify all information with official AIA sources.
                   </p>
                 </section>
 
@@ -116,7 +125,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">6. Intellectual Property</h2>
                   <p className="text-gray-700 leading-relaxed">
-                    All content, features, and functionality of the AIA Insurance Advisor platform are owned by AIA and are protected by international copyright, trademark, and other intellectual property laws.
+                    The platform's code, features, and functionality are owned by Advisory Solutions, the independent developer of this tool. Insurance company names, logos, and trademarks referenced within the platform are the property of their respective owners and are used for calculation purposes only. This tool is not endorsed by or affiliated with any insurance company. All product information remains the intellectual property of the respective insurance companies.
                   </p>
                 </section>
 
@@ -152,7 +161,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">10. Contact Information</h2>
                   <p className="text-gray-700 leading-relaxed">
-                    If you have any questions about these Terms of Service, please contact us through the official AIA customer service channels or through the platform's support features.
+                    If you have any questions about these Terms of Service, please contact us at: kyaw.debug@gmail.com. For official insurance product information, please contact the respective insurance companies directly through their official channels.
                   </p>
                 </section>
               </div>
@@ -168,7 +177,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} AIA Insurance Advisor. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Advisory Solutions - Independent Insurance Advisor Tool</p>
         </div>
       </div>
     </div>

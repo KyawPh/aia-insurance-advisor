@@ -45,10 +45,10 @@ export default function QRCodePage() {
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          <div className="relative h-12 w-24">
+          <div className="relative h-16 w-32">
             <Image
               src="/logo.png"
-              alt="AIA Logo"
+              alt="IA Pro Logo"
               fill
               style={{ objectFit: "contain" }}
               className="drop-shadow-sm"
@@ -64,10 +64,10 @@ export default function QRCodePage() {
           className="text-center"
         >
           <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-2">
-            AIA Insurance Advisor
+            Insurance Advisor Pro
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Professional Insurance Recommendation Tool
+            Professional Advisory Tool for Insurance Agents
           </p>
 
           {/* QR Code Card */}
@@ -78,17 +78,24 @@ export default function QRCodePage() {
                 {qrCodeUrl ? (
                   <img
                     src={qrCodeUrl}
-                    alt="QR Code for AIA Insurance Advisor"
+                    alt="QR Code for Insurance Advisor Pro"
                     className="w-full max-w-[300px] h-auto mx-auto"
                   />
                 ) : (
                   <div className="w-[300px] h-[300px] mx-auto bg-gray-100 animate-pulse rounded-lg"></div>
                 )}
                 
-                {/* AIA Logo overlay in center of QR */}
+                {/* Logo overlay in center of QR */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="bg-white p-2 rounded-lg shadow-md">
-                    <div className="text-red-600 font-bold text-xl">AIA</div>
+                  <div className="bg-white p-1 rounded-lg shadow-md">
+                    <div className="relative w-12 h-12">
+                      <Image
+                        src="/logo.png"
+                        alt="IA Pro"
+                        fill
+                        style={{ objectFit: "contain" }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -102,7 +109,7 @@ export default function QRCodePage() {
 
                 <div className="space-y-2 text-sm text-gray-600">
                   <p>Scan this QR code with your phone camera to access:</p>
-                  <p className="font-medium text-gray-900">AIA Insurance Advisor Platform</p>
+                  <p className="font-medium text-gray-900">Insurance Advisor Pro Platform</p>
                 </div>
 
                 {/* Features */}
@@ -152,7 +159,7 @@ export default function QRCodePage() {
 
           {/* Footer */}
           <div className="mt-12 text-center text-xs text-gray-500">
-            <p>© {new Date().getFullYear()} AIA Myanmar Insurance Advisory Services</p>
+            <p>© {new Date().getFullYear()} Advisory Solutions - Insurance Advisory Tool for Agents</p>
             <p className="mt-1">Professional Insurance Solutions</p>
           </div>
         </motion.div>

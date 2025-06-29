@@ -15,6 +15,7 @@ import { QuotaGuard } from "@/components/quota-guard"
 import { useAuth } from "@/contexts/auth-context"
 import { useQuota } from "@/hooks/use-quota"
 import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { getInitials } from "@/lib/user-utils"
 import { 
   loadClientData,
@@ -22,6 +23,7 @@ import {
   hasClientData,
   clearSession
 } from "@/lib/session-storage"
+import { logger } from "@/lib/logger"
 import type { ClientData, ProductSelections } from "@/types/insurance"
 
 const STEPS = [
@@ -45,7 +47,7 @@ const STEPS = [
   },
 ] as const
 
-function AIAInsuranceAdvisorContent() {
+function InsuranceAdvisorProContent() {
   const { user, logout } = useAuth()
   const { quota, consumeQuota, isLowQuota, quotaRemaining, quotaUsed, quotaLimit, loading: quotaLoading, calendarMonthQuotesUsed, calendarMonthQuotesRemaining } = useQuota()
   const router = useRouter()
@@ -121,7 +123,7 @@ function AIAInsuranceAdvisorContent() {
       const savedClientData = loadClientData()
       
       if (savedClientData) {
-        console.log('🔄 Restoring client data:', savedClientData)
+        logger.debug('Restoring client data')
         setClientData(savedClientData)
         setShowDataRestored(true)
         setTimeout(() => setShowDataRestored(false), 5000)
@@ -134,7 +136,7 @@ function AIAInsuranceAdvisorContent() {
       
       setClientDataLoaded(true)
     } else if (user && !clientDataLoaded && isNewQuote) {
-      console.log('🆕 Starting fresh session')
+      logger.debug('Starting fresh session')
       clearSession()
       initializeSession()
       setClientDataLoaded(true)
@@ -185,7 +187,7 @@ function AIAInsuranceAdvisorContent() {
   const progress = (currentStep / 3) * 100
 
   const handleNewQuote = () => {
-    console.log('🆕 Starting new quote...')
+    logger.debug('Starting new quote')
     
     // Set flag to prevent session restoration
     setIsNewQuote(true)
@@ -205,7 +207,7 @@ function AIAInsuranceAdvisorContent() {
       initializeSession()
       setClientDataLoaded(true)
       setIsNewQuote(false)
-      console.log('🆕 New quote session initialized')
+      logger.debug('New quote session initialized')
     }, 200)
   }
 
@@ -216,7 +218,7 @@ function AIAInsuranceAdvisorContent() {
       await logout()
       router.push("/auth/login")
     } catch (error) {
-      console.error("Error logging out:", error)
+      logger.error("Error logging out", error)
       alert("Failed to logout. Please try again.")
     }
   }
@@ -229,8 +231,8 @@ function AIAInsuranceAdvisorContent() {
         <div className="max-w-4xl mx-auto">
           {/* Header - Clean and Minimal */}
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-red-900 mb-2">Insurance Advisor</h1>
-            <p className="text-sm sm:text-base text-gray-500">Professional Insurance Recommendation Tool</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-red-900 mb-2">Insurance Advisor Pro</h1>
+            <p className="text-sm sm:text-base text-gray-500">Professional Advisory Tool for Insurance Agents</p>
           </div>
 
           {/* Data Loading Indicator */}
@@ -333,14 +335,24 @@ function AIAInsuranceAdvisorContent() {
 
         {/* Footer */}
         <div className="text-center text-xs sm:text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} AIA Insurance Advisor</p>
-          <Button 
-            onClick={() => router.push("/qr")} 
-            variant="link" 
-            className="text-xs text-gray-400 hover:text-gray-600 mt-2"
-          >
-            Share via QR Code
-          </Button>
+          <p>© {new Date().getFullYear()} Insurance Advisor Pro</p>
+          <div className="flex justify-center items-center gap-2 sm:gap-4 mt-2 flex-wrap">
+            <Link href="/privacy" className="hover:text-gray-600 transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="text-gray-300">•</span>
+            <Link href="/terms" className="hover:text-gray-600 transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-gray-300">•</span>
+            <Button 
+              onClick={() => router.push("/qr")} 
+              variant="link" 
+              className="text-xs text-gray-400 hover:text-gray-600 p-0 h-auto"
+            >
+              Share via QR Code
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -436,7 +448,7 @@ function AIAInsuranceAdvisorContent() {
   )
 }
 
-export default function AIAInsuranceAdvisor() {
+export default function InsuranceAdvisorPro() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-r from-red-50 via-white to-red-100 flex items-center justify-center">
@@ -446,7 +458,7 @@ export default function AIAInsuranceAdvisor() {
         </div>
       </div>
     }>
-      <AIAInsuranceAdvisorContent />
+      <InsuranceAdvisorProContent />
     </Suspense>
   )
 }

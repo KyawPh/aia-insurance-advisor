@@ -30,6 +30,8 @@ next-env.d.ts
 .firebase/
 *-debug.log
 .runtimeconfig.json
+scripts/serviceAccountKey.json
+serviceAccountKey.json
 
 # ide
 .vscode/

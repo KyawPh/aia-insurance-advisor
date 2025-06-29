@@ -18,10 +18,10 @@ export default function PrivacyPolicyPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
           <div className="flex items-center space-x-4">
-            <div className="relative h-10 w-20 sm:h-12 sm:w-24">
+            <div className="relative h-14 w-28 sm:h-16 sm:w-32">
               <Image
                 src="/logo.png"
-                alt="AIA Logo"
+                alt="IA Pro Logo"
                 fill
                 style={{ objectFit: "contain" }}
                 className="drop-shadow-sm"
@@ -64,6 +64,26 @@ export default function PrivacyPolicyPage() {
             </CardHeader>
             <CardContent className="prose prose-gray max-w-none">
               <div className="space-y-8">
+                {/* Disclaimer */}
+                <div className="p-6 bg-amber-50 rounded-lg border border-amber-200 mb-8">
+                  <h2 className="text-lg font-medium text-amber-900 mb-2">Independent Platform Notice</h2>
+                  <p className="text-amber-800">
+                    This is an <strong>independent tool</strong> created for AIA insurance agents. 
+                    This platform operates independently and is not affiliated with, endorsed by, or sponsored by AIA. 
+                    This privacy policy applies only to this independent platform, not to AIA's official services.
+                  </p>
+                </div>
+                <section>
+                  <h2 className="text-xl font-medium text-gray-900 mb-4">Data Controller</h2>
+                  <p className="text-gray-700 leading-relaxed mb-6">
+                    The data controller for this independent platform is Advisory Solutions. 
+                    This privacy policy applies only to data collected through this independent tool, not to any data 
+                    collected by AIA through their official channels.
+                  </p>
+                </section>
+
+                <Separator />
+
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">1. Information We Collect</h2>
                   
@@ -73,7 +93,7 @@ export default function PrivacyPolicyPage() {
                       <div>
                         <h3 className="font-medium text-gray-900 mb-2">Personal Information</h3>
                         <p className="text-gray-700 leading-relaxed">
-                          When you create an account, we collect your full name, email address, and any optional information you provide such as company and position details.
+                          When you create an account on this independent platform, we collect your full name, email address, and any optional information you provide such as company and position details.
                         </p>
                       </div>
                     </div>
@@ -83,7 +103,7 @@ export default function PrivacyPolicyPage() {
                       <div>
                         <h3 className="font-medium text-gray-900 mb-2">Client Data</h3>
                         <p className="text-gray-700 leading-relaxed">
-                          The platform allows you to enter client information including names, dates of birth, gender, and insurance preferences. This data is used solely for generating insurance recommendations and quotes.
+                          The platform allows you to enter client information including names, dates of birth, gender, and insurance preferences. This data is used solely for generating insurance recommendations and premium calculations.
                         </p>
                       </div>
                     </div>
@@ -219,12 +239,11 @@ export default function PrivacyPolicyPage() {
                 <section>
                   <h2 className="text-xl font-medium text-gray-900 mb-4">11. Contact Us</h2>
                   <p className="text-gray-700 leading-relaxed">
-                    If you have questions about this Privacy Policy or how we handle your personal information, please contact us through:
+                    If you have questions about this Privacy Policy or how we handle your personal information on Insurance Advisor Pro, please contact us:
                   </p>
                   <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 mt-3">
-                    <li>The platform's support features</li>
-                    <li>Official AIA customer service channels</li>
-                    <li>Email: privacy@aia.com (example)</li>
+                    <li>Email: kyaw.debug@gmail.com</li>
+                    <li>Note: For official insurance company services and products, please contact them directly through their official channels</li>
                   </ul>
                 </section>
               </div>
@@ -232,7 +251,7 @@ export default function PrivacyPolicyPage() {
               <div className="mt-12 p-6 bg-blue-50 rounded-lg border border-blue-100">
                 <h3 className="font-medium text-blue-900 mb-2">Your Trust is Important to Us</h3>
                 <p className="text-sm text-blue-800">
-                  We are committed to transparency in how we collect, use, and protect your information. This policy reflects our dedication to maintaining your trust while providing you with excellent insurance advisory services.
+                  We are committed to transparency in how we collect, use, and protect your information on this independent platform. This policy reflects our dedication to maintaining your trust while providing you with a professional insurance advisory tool. Remember to verify all information with official AIA sources.
                 </p>
               </div>
             </CardContent>
@@ -241,7 +260,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} AIA Insurance Advisor. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Advisory Solutions - Independent Insurance Advisor Tool</p>
         </div>
       </div>
     </div>

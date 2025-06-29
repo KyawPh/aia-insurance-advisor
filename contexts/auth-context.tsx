@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore'
 import { auth, googleProvider, db } from '@/lib/firebase'
+import { logger } from '@/lib/logger'
 
 interface AuthContextType {
   user: User | null
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
     } catch (error) {
-      console.error('Error initializing user profile:', error)
+      logger.error('Error initializing user profile', error)
     }
   }
 
@@ -85,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           await initializeUserProfile(user)
         } catch (error) {
-          console.error('Failed to initialize user profile:', error)
+          logger.error('Failed to initialize user profile', error)
         }
       }
       
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       // Don't log popup closed errors as they're expected user behavior
       if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-        console.error('Error during Google sign in:', error)
+        logger.error('Error during Google sign in', error)
       }
       throw error
     }
@@ -114,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signOut(auth)
     } catch (error) {
-      console.error('Error during logout:', error)
+      logger.error('Error during logout', error)
       throw error
     }
   }

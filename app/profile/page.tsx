@@ -28,6 +28,7 @@ import { clearSession } from "@/lib/session-storage"
 import { getInitials } from "@/lib/user-utils"
 import { formatMMK } from "@/utils/formatting"
 import { useSubscriptionPlans } from "@/hooks/use-subscription-plans"
+import { logger } from "@/lib/logger"
 import { UpgradePaymentDialog } from "@/components/upgrade-payment-dialog"
 import { UpgradeService, type UpgradeRequest } from "@/lib/upgrade-service"
 
@@ -121,7 +122,7 @@ function ProfileContent() {
         }))
       }
     } catch (error) {
-      console.error("Error fetching user data:", error)
+      logger.error("Error fetching user data", error)
       // Fallback to localStorage
       setProfileForm(prev => ({
         ...prev,
@@ -142,7 +143,7 @@ function ProfileContent() {
       const requests = await UpgradeService.getUserUpgradeRequests(user.uid)
       setUpgradeRequests(requests)
     } catch (error) {
-      console.error("Error fetching upgrade requests:", error)
+      logger.error("Error fetching upgrade requests", error)
     } finally {
       setLoadingUpgradeRequests(false)
     }
@@ -203,7 +204,7 @@ function ProfileContent() {
         setTimeout(() => setProfileUpdateSuccess(false), 5000)
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
+      logger.error("Error updating profile", error)
     } finally {
       setIsLoading(false)
     }
@@ -385,7 +386,7 @@ function ProfileContent() {
       // Clear loading state after navigation
       setLoadingQuoteId(null)
     } catch (error) {
-      console.error('Error viewing quote:', error)
+      logger.error('Error viewing quote', error)
       
       // Clear loading state on error
       setLoadingQuoteId(null)
@@ -419,7 +420,7 @@ function ProfileContent() {
       await logout()
       router.push("/auth/login")
     } catch (error) {
-      console.error("Error logging out:", error)
+      logger.error("Error logging out", error)
     }
   }
 
@@ -434,10 +435,10 @@ function ProfileContent() {
           {/* Header with AIA Logo */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-gray-200">
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="relative h-10 w-20 sm:h-12 sm:w-24 cursor-pointer" onClick={() => router.push("/")}>
+              <div className="relative h-14 w-28 sm:h-16 sm:w-32 cursor-pointer" onClick={() => router.push("/")}>
                 <Image
                   src="/logo.png"
-                  alt="AIA Logo"
+                  alt="IA Pro Logo"
                   fill
                   style={{ objectFit: "contain" }}
                   className="drop-shadow-sm"
@@ -1205,7 +1206,7 @@ function ProfileContent() {
 
           {/* Footer */}
           <div className="text-center mt-8 text-xs text-gray-500">
-            <p>© {new Date().getFullYear()} AIA Insurance Advisor. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Insurance Advisor Pro. All rights reserved.</p>
           </div>
         </div>
 

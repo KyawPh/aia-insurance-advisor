@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/contexts/auth-context'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 export const metadata: Metadata = {
-  title: 'AIA Insurance Advisor',
-  description: 'Professional insurance recommendation tool for AIA Myanmar',
-  generator: 'AIA Myanmar',
+  title: 'Insurance Advisor Pro',
+  description: 'Professional insurance advisory tool for agents - Designed for AIA products in Myanmar',
+  generator: 'Advisory Solutions',
 }
 
 export const viewport: Viewport = {
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )
