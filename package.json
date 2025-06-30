@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:production": "./scripts/build-production.sh",
     "start": "next start",
     "lint": "next lint",
     "export": "next build",
-    "deploy": "npm run export && firebase deploy --only hosting",
+    "deploy": "npm run build:production && firebase deploy --only hosting",
     "deploy:beta": "npm run export && firebase deploy --only hosting:beta",
-    "deploy:stable": "npm run export && firebase deploy --only hosting:stable",
-    "deploy:all": "npm run export && firebase deploy --only hosting"
+    "deploy:stable": "npm run build:production && firebase deploy --only hosting:stable",
+    "deploy:all": "npm run build:production && firebase deploy --only hosting"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -51,7 +52,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "framer-motion": "latest",
-    "html2canvas": "latest",
+    "html2canvas": "^1.4.1",
     "input-otp": "1.4.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.454.0",

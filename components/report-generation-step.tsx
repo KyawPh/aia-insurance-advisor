@@ -697,7 +697,36 @@ export default function ReportGenerationStep({ clientData, productSelections, on
       const response = await fetch(generatedImageUrl)
       const blob = await response.blob()
       
-      // Create a download link
+      // Check if we're on a mobile/tablet device
+      const isMobileOrTablet = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      
+      // For mobile/tablet devices, try Web Share API first
+      if (isMobileOrTablet && navigator.share) {
+        try {
+          const file = new File([blob], `AIA_Insurance_Report_${clientData.name.replace(/\s+/g, "_")}_${new Date().toISOString().split('T')[0]}.png`, { type: 'image/png' })
+          
+          await navigator.share({
+            files: [file],
+            title: 'AIA Insurance Report',
+            text: `Insurance report for ${clientData.name}`
+          })
+          
+          // Track share activity
+          await trackActivity(CONSTANTS.TRACK_ACTION_TYPE, {
+            clientName: clientData.name,
+            selectedProducts: getSelectedProductNames(productSelections, selectedOHSPlans),
+            viewMethod: 'share',
+            format: 'PNG'
+          })
+          
+          return // Exit if share was successful
+        } catch (shareError) {
+          // If share fails, fall back to download
+          console.log('Share failed, falling back to download', shareError)
+        }
+      }
+      
+      // Desktop or fallback: direct download
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
