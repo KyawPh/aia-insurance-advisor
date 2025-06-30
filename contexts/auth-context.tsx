@@ -7,7 +7,7 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore'
+import { doc, setDoc, getDoc, getDocs, collection, Timestamp } from 'firebase/firestore'
 import { auth, googleProvider, db } from '@/lib/firebase'
 import { logger } from '@/lib/logger'
 
@@ -67,6 +67,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lastResetDate: Timestamp.fromDate(now)
           }
         })
+        
+        // Send Telegram notification for new user via Firebase Function
+        try {
+          // Get the user's ID token for authentication
+          const idToken = await user.getIdToken()
+          
+          // Call Firebase Function endpoint
+          const functionUrl = `https://us-central1-aia-advisor-b5760.cloudfunctions.net/sendTelegramNotification`
+          
+          const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+              type: 'new_signup',
+              userData: {
+                email: user.email,
+                displayName: user.displayName,
+                signupTime: now.toISOString(),
+              },
+            }),
+          })
+          
+          if (!response.ok) {
+            const errorText = await response.text()
+            logger.error('Telegram notification failed:', errorText)
+          }
+        } catch (notifyError) {
+          // Don't block user signup if notification fails
+          logger.error('Failed to send signup notification', notifyError)
+        }
       } else {
         // Existing user - just update last login
         await setDoc(userDocRef, {
