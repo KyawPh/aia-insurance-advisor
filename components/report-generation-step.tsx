@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, FileText } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import type { ClientData, ProductSelections, OHSPlanWithPremium } from "@/types/insurance"
 import { calculateAge } from "@/utils/calculations"
 import { formatMMK } from "@/utils/formatting"
@@ -262,6 +263,7 @@ const generateReportStyles = () => {
 export default function ReportGenerationStep({ clientData, productSelections, onNewQuote }: ReportGenerationStepProps) {
   const { trackActivity } = useQuota()
   const { user } = useAuth()
+  const { toast } = useToast()
   const age = calculateAge(clientData.dateOfBirth)
   const insuranceAge = age + 1
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
@@ -686,6 +688,11 @@ export default function ReportGenerationStep({ clientData, productSelections, on
     } catch (error) {
       logger.error("Error generating image in background", error)
       setIsGenerating(false)
+      toast({
+        title: "Generation Failed",
+        description: "Unable to generate report image. Please refresh the page.",
+        variant: "destructive"
+      })
     }
   }
 
@@ -719,10 +726,15 @@ export default function ReportGenerationStep({ clientData, productSelections, on
             format: 'PNG'
           })
           
+          toast({
+            title: "Success",
+            description: "Report shared successfully"
+          })
+          
           return // Exit if share was successful
         } catch (shareError) {
           // If share fails, fall back to download
-          console.log('Share failed, falling back to download', shareError)
+          logger.error('Share failed, falling back to download', shareError)
         }
       }
       
@@ -743,9 +755,18 @@ export default function ReportGenerationStep({ clientData, productSelections, on
         viewMethod: 'download',
         format: 'PNG'
       })
+      
+      toast({
+        title: "Download Started",
+        description: "Check your downloads folder"
+      })
     } catch (error) {
       logger.error('Error downloading PNG', error)
-      alert('Failed to download image. Please try saving by right-clicking the image.')
+      toast({
+        title: "Download Failed",
+        description: "Please try saving by right-clicking the image.",
+        variant: "destructive"
+      })
     }
   }
 

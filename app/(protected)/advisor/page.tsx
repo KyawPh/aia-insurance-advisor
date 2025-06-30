@@ -85,7 +85,7 @@ function InsuranceAdvisorProContent() {
     if (isNewQuoteFromUrl) {
       setIsNewQuote(true)
       // Remove the parameter from URL
-      router.replace('/')
+      router.replace('/advisor')
     } else if (isViewQuoteFromUrl) {
       // Load quote data from session storage
       const viewQuoteData = sessionStorage.getItem('viewQuoteData')
@@ -108,7 +108,7 @@ function InsuranceAdvisorProContent() {
           sessionStorage.removeItem('viewQuoteData')
           
           // Remove the parameters from URL
-          router.replace('/')
+          router.replace('/advisor')
         } catch (error) {
           console.error('Error loading quote data:', error)
         }
@@ -118,7 +118,9 @@ function InsuranceAdvisorProContent() {
 
   // Load client data if available
   useEffect(() => {
-    if (user && !clientDataLoaded && !isNewQuote) {
+    const isViewQuoteFromUrl = searchParams.get('view') === 'true'
+    
+    if (user && !clientDataLoaded && !isNewQuote && !isViewQuoteFromUrl) {
       const savedClientData = loadClientData()
       
       if (savedClientData) {
