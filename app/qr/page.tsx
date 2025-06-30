@@ -11,12 +11,26 @@ import { useRouter } from "next/navigation"
 export default function QRCodePage() {
   const router = useRouter()
   const [qrCodeUrl, setQrCodeUrl] = useState("")
+  const [qrError, setQrError] = useState(false)
   const siteUrl = "https://insurance-advisor.web.app/"
 
   useEffect(() => {
     // Generate QR code using qr-server.com API
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(siteUrl)}&color=dc2626&bgcolor=ffffff`
-    setQrCodeUrl(qrApiUrl)
+    
+    // Test if the image loads successfully
+    const img = new window.Image()
+    img.onload = () => {
+      setQrCodeUrl(qrApiUrl)
+      setQrError(false)
+    }
+    img.onerror = () => {
+      console.error("Failed to load QR code from API")
+      setQrError(true)
+      // Fallback: You can generate a data URL or use a static image
+      setQrCodeUrl("/qr-code-fallback.svg")
+    }
+    img.src = qrApiUrl
   }, [])
 
   const handleDownloadQR = () => {
@@ -76,11 +90,25 @@ export default function QRCodePage() {
               {/* QR Code */}
               <div className="relative bg-white p-6 rounded-xl border-2 border-gray-100">
                 {qrCodeUrl ? (
-                  <img
-                    src={qrCodeUrl}
-                    alt="QR Code for Insurance Advisor"
-                    className="w-full max-w-[300px] h-auto mx-auto"
-                  />
+                  <>
+                    <img
+                      src={qrCodeUrl}
+                      alt="QR Code for Insurance Advisor"
+                      className="w-full max-w-[300px] h-auto mx-auto"
+                      onError={(e) => {
+                        console.error("QR code image failed to load")
+                        e.currentTarget.src = "/qr-code-fallback.svg"
+                      }}
+                    />
+                    {qrError && (
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          QR code generation service is temporarily unavailable. 
+                          Please use the URL below to access the site.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="w-[300px] h-[300px] mx-auto bg-gray-100 animate-pulse rounded-lg"></div>
                 )}

@@ -160,6 +160,101 @@ When approving an upgrade request:
 - `upgradeRequests` - Upgrade request records
 - `payments` - Payment history
 
+## Database Cleanup Scripts
+
+### IMPORTANT: Always backup before cleanup!
+
+Before running any cleanup operations, always create a full backup:
+
+```bash
+npm run backup
+```
+
+This creates a timestamped backup in the `backups/` directory with:
+- All collection data exported to JSON
+- Metadata about the backup
+- A restore script for emergency recovery
+
+### Available Cleanup Scripts
+
+#### 1. Validate Data Integrity
+Check for data inconsistencies without making changes:
+
+```bash
+npm run validate
+```
+
+Features:
+- Validates all collections for missing/invalid fields
+- Checks cross-collection consistency
+- Reports issues without modifying data
+- Useful for regular health checks
+
+#### 2. Clean Up Users
+Remove inactive, test, or invalid user accounts:
+
+```bash
+npm run cleanup:users
+```
+
+Features:
+- Remove users inactive for 6+ months
+- Delete test/demo accounts (test@, demo@, etc.)
+- Fix invalid subscription data
+- Comprehensive cleanup mode
+- Always prompts before deletion
+
+#### 3. Clean Up Usage Records
+Archive and remove old usage tracking data:
+
+```bash
+npm run cleanup:usage
+```
+
+Features:
+- Archive records older than 1 year
+- Remove orphaned records (user deleted)
+- View usage statistics
+- Aggregate historical data before deletion
+- Archives saved for future reference
+
+#### 4. Clean Up Upgrade Requests
+Archive old completed/rejected upgrade requests:
+
+```bash
+npm run cleanup:upgrades
+```
+
+Features:
+- Archive requests older than 6 months
+- Remove orphaned requests
+- Generate revenue reports
+- Preserve payment history in archives
+
+### Cleanup Best Practices
+
+1. **Always run in this order:**
+   - First: `npm run backup`
+   - Second: `npm run validate` (to see what needs fixing)
+   - Third: Run specific cleanup scripts as needed
+   - Finally: `npm run validate` again (to verify)
+
+2. **Archive Strategy:**
+   - Old data is archived to `archives/` directory
+   - Archives include timestamps for easy identification
+   - Keep archives for at least 1 year for compliance
+
+3. **Regular Maintenance Schedule:**
+   - Weekly: Run validation checks
+   - Monthly: Clean up usage records
+   - Quarterly: Clean up users and upgrade requests
+   - Always: Backup before any cleanup
+
+4. **Recovery:**
+   - Each backup includes a `restore.js` script
+   - To restore: `node backups/backup-TIMESTAMP/restore.js`
+   - Test restore process regularly
+
 ## Troubleshooting
 
 ### "Firebase configuration missing" error

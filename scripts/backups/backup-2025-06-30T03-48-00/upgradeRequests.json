@@ -1,0 +1,120 @@
+[
+  {
+    "id": "D2QzmppQx8a7Q5lkH1aW",
+    "data": {
+      "paymentMethod": "wave_money",
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "phoneNumber": "",
+      "billingPeriod": "monthly",
+      "plan": "unlimited",
+      "userName": "Kyaw",
+      "createdAt": {
+        "_seconds": 1749814509,
+        "_nanoseconds": 55000000
+      },
+      "status": "pending",
+      "notes": "",
+      "userEmail": "kyaw.debug@gmail.com",
+      "amount": 15000,
+      "updatedAt": {
+        "_seconds": 1749814509,
+        "_nanoseconds": 55000000
+      }
+    },
+    "createTime": "2025-06-13T11:35:09.634Z",
+    "updateTime": "2025-06-13T11:35:09.634Z"
+  },
+  {
+    "id": "KKwsZrptfACSczz2hJf3",
+    "data": {
+      "plan": "unlimited",
+      "createdAt": {
+        "_seconds": 1749812680,
+        "_nanoseconds": 407000000
+      },
+      "amount": 96000,
+      "billingPeriod": "12months",
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "paymentMethod": "wave_money",
+      "userName": "Kyaw",
+      "notes": "",
+      "userEmail": "kyaw.debug@gmail.com",
+      "phoneNumber": "",
+      "paymentReference": "2221",
+      "processedAt": {
+        "_seconds": 1749813643,
+        "_nanoseconds": 624000000
+      },
+      "processedBy": "kyaw.debug@gmail.com",
+      "status": "completed",
+      "updatedAt": {
+        "_seconds": 1749813643,
+        "_nanoseconds": 624000000
+      }
+    },
+    "createTime": "2025-06-13T11:04:41.674Z",
+    "updateTime": "2025-06-13T11:20:43.992Z"
+  },
+  {
+    "id": "NGG8y0PoZ1oaLz0jFUT1",
+    "data": {
+      "userName": "Kyaw",
+      "phoneNumber": "",
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "createdAt": {
+        "_seconds": 1749807193,
+        "_nanoseconds": 376000000
+      },
+      "userEmail": "kyaw.debug@gmail.com",
+      "billingPeriod": "monthly",
+      "paymentMethod": "kbz_pay",
+      "plan": "unlimited",
+      "amount": 15000,
+      "notes": "",
+      "paymentReference": "12345",
+      "processedAt": {
+        "_seconds": 1749812412,
+        "_nanoseconds": 465000000
+      },
+      "processedBy": "kyaw.debug@gmail.com",
+      "status": "completed",
+      "updatedAt": {
+        "_seconds": 1749812412,
+        "_nanoseconds": 465000000
+      }
+    },
+    "createTime": "2025-06-13T09:33:14.567Z",
+    "updateTime": "2025-06-13T11:00:12.812Z"
+  },
+  {
+    "id": "YrHXY8JaCHltwR9pXfuR",
+    "data": {
+      "notes": "",
+      "paymentMethod": "wave_money",
+      "userName": "Kyaw",
+      "phoneNumber": "",
+      "createdAt": {
+        "_seconds": 1749812473,
+        "_nanoseconds": 891000000
+      },
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "userEmail": "kyaw.debug@gmail.com",
+      "billingPeriod": "6months",
+      "amount": 60000,
+      "plan": "unlimited",
+      "paymentReference": "12345",
+      "processedAt": {
+        "_seconds": 1749812496,
+        "_nanoseconds": 534000000
+      },
+      "processedBy": "kyaw.debug@gmail.com",
+      "status": "completed",
+      "updatedAt": {
+        "_seconds": 1749812496,
+        "_nanoseconds": 534000000
+      }
+    },
+    "createTime": "2025-06-13T11:01:14.240Z",
+    "updateTime": "2025-06-13T11:01:36.904Z"
+  }
+]

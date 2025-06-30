@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-06-30T03:12:11.283Z",
+  "projectId": "aia-advisor-b5760",
+  "collections": [
+    "users",
+    "usage",
+    "quotaPlans",
+    "upgradeRequests",
+    "payments"
+  ],
+  "backupDir": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-12-11",
+  "results": []
+}

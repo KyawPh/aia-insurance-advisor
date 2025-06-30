@@ -1,0 +1,179 @@
+[
+  {
+    "id": "5RNyxvm8DePDjpDi3q3L",
+    "data": {
+      "userId": "rpQN0uzWtZXk8HSqfsVmlPJvyZE2",
+      "userEmail": "suhtetkhin7923@gmail.com",
+      "userName": "Su Htet Khin",
+      "amount": 60000,
+      "currency": "MMK",
+      "paymentMethod": "manual",
+      "paymentReference": "kph",
+      "billingPeriod": "6months",
+      "subscriptionStart": {
+        "_seconds": 1749910982,
+        "_nanoseconds": 42000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1765722182,
+        "_nanoseconds": 42000000
+      },
+      "status": "completed",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749910982,
+        "_nanoseconds": 42000000
+      }
+    },
+    "createTime": "2025-06-14T14:23:03.704Z",
+    "updateTime": "2025-06-14T14:23:03.704Z"
+  },
+  {
+    "id": "FvnWyx54SkJUHi6rIG6C",
+    "data": {
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "userEmail": "kyaw.debug@gmail.com",
+      "userName": "Kyaw",
+      "amount": 60000,
+      "currency": "MMK",
+      "paymentMethod": "wave_money",
+      "paymentReference": "12345",
+      "billingPeriod": "6months",
+      "subscriptionStart": {
+        "_seconds": 1749812496,
+        "_nanoseconds": 534000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1765623696,
+        "_nanoseconds": 534000000
+      },
+      "status": "completed",
+      "upgradeRequestId": "YrHXY8JaCHltwR9pXfuR",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749812496,
+        "_nanoseconds": 534000000
+      }
+    },
+    "createTime": "2025-06-13T11:01:36.904Z",
+    "updateTime": "2025-06-13T11:01:36.904Z"
+  },
+  {
+    "id": "VNOS36WlRtMunwERQ2iG",
+    "data": {
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "userEmail": "kyaw.debug@gmail.com",
+      "userName": "Kyaw",
+      "amount": 15000,
+      "currency": "MMK",
+      "paymentMethod": "kbz_pay",
+      "paymentReference": "12345",
+      "billingPeriod": "monthly",
+      "subscriptionStart": {
+        "_seconds": 1749812412,
+        "_nanoseconds": 465000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1752404412,
+        "_nanoseconds": 465000000
+      },
+      "status": "completed",
+      "upgradeRequestId": "NGG8y0PoZ1oaLz0jFUT1",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749812412,
+        "_nanoseconds": 465000000
+      }
+    },
+    "createTime": "2025-06-13T11:00:12.812Z",
+    "updateTime": "2025-06-13T11:00:12.812Z"
+  },
+  {
+    "id": "Ype0QSSoiMcIBZxrIxVD",
+    "data": {
+      "userId": "zvvsBLp6rHZKgvEHgySN9U5yQj53",
+      "userEmail": "yinmartheint1998@gmail.com",
+      "userName": "yinmar theint",
+      "amount": 15000,
+      "currency": "MMK",
+      "paymentMethod": "manual",
+      "paymentReference": "kph",
+      "billingPeriod": "monthly",
+      "subscriptionStart": {
+        "_seconds": 1749911066,
+        "_nanoseconds": 42000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1752503066,
+        "_nanoseconds": 42000000
+      },
+      "status": "completed",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749911066,
+        "_nanoseconds": 42000000
+      }
+    },
+    "createTime": "2025-06-14T14:24:27.592Z",
+    "updateTime": "2025-06-14T14:24:27.592Z"
+  },
+  {
+    "id": "aaNsR0MAM0VZToW9qpS5",
+    "data": {
+      "userId": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "userEmail": "kyaw.debug@gmail.com",
+      "userName": "Kyaw",
+      "amount": 96000,
+      "currency": "MMK",
+      "paymentMethod": "wave_money",
+      "paymentReference": "2221",
+      "billingPeriod": "12months",
+      "subscriptionStart": {
+        "_seconds": 1749813643,
+        "_nanoseconds": 624000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1781349643,
+        "_nanoseconds": 624000000
+      },
+      "status": "completed",
+      "upgradeRequestId": "KKwsZrptfACSczz2hJf3",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749813643,
+        "_nanoseconds": 624000000
+      }
+    },
+    "createTime": "2025-06-13T11:20:43.992Z",
+    "updateTime": "2025-06-13T11:20:43.992Z"
+  },
+  {
+    "id": "pzodxSb8jK2V6CBPtkny",
+    "data": {
+      "userId": "o5DGo29RAQdYF1pgp7PaRztpTc52",
+      "userEmail": "ri.in.rangoon@gmail.com",
+      "userName": "Ri In Rangoon",
+      "amount": 15000,
+      "currency": "MMK",
+      "paymentMethod": "manual",
+      "paymentReference": "kph",
+      "billingPeriod": "monthly",
+      "subscriptionStart": {
+        "_seconds": 1749910873,
+        "_nanoseconds": 89000000
+      },
+      "subscriptionEnd": {
+        "_seconds": 1752502873,
+        "_nanoseconds": 89000000
+      },
+      "status": "completed",
+      "processedBy": "kyaw.debug@gmail.com",
+      "createdAt": {
+        "_seconds": 1749910873,
+        "_nanoseconds": 89000000
+      }
+    },
+    "createTime": "2025-06-14T14:21:14.670Z",
+    "updateTime": "2025-06-14T14:21:14.670Z"
+  }
+]

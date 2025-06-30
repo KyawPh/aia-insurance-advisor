@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-06-30T03:48:00.162Z",
+  "projectId": "aia-advisor-b5760",
+  "collections": [
+    "users",
+    "usage",
+    "quotaPlans",
+    "upgradeRequests",
+    "payments"
+  ],
+  "backupDir": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00",
+  "results": [
+    {
+      "collection": "users",
+      "count": 8,
+      "file": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00/users.json"
+    },
+    {
+      "collection": "usage",
+      "count": 448,
+      "file": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00/usage.json"
+    },
+    {
+      "collection": "quotaPlans",
+      "count": 0,
+      "file": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00/quotaPlans.json"
+    },
+    {
+      "collection": "upgradeRequests",
+      "count": 4,
+      "file": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00/upgradeRequests.json"
+    },
+    {
+      "collection": "payments",
+      "count": 6,
+      "file": "/Users/swiftfalcon/Developer/aia-insurance-advisor/scripts/backups/backup-2025-06-30T03-48-00/payments.json"
+    }
+  ]
+}

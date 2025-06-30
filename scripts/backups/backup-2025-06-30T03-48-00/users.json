@@ -1,0 +1,420 @@
+[
+  {
+    "id": "C8j8QOCyVqNG631AF7WFquaJ3K63",
+    "data": {
+      "email": "shweyioo.tw1990@gmail.com",
+      "createdAt": {
+        "_seconds": 1749965762,
+        "_nanoseconds": 496000000
+      },
+      "fullName": "Shweyi Oo",
+      "uid": "C8j8QOCyVqNG631AF7WFquaJ3K63",
+      "lastLogin": {
+        "_seconds": 1750678853,
+        "_nanoseconds": 549000000
+      },
+      "lastActivity": {
+        "_seconds": 1751011967,
+        "_nanoseconds": 26000000
+      },
+      "subscription": {
+        "lastResetDate": {
+          "_seconds": 1749965762,
+          "_nanoseconds": 496000000
+        },
+        "billingPeriod": "trial",
+        "isActive": true,
+        "autoRenew": false,
+        "isInGracePeriod": false,
+        "dailyQuotaLimit": 5,
+        "subscriptionStart": {
+          "_seconds": 1749965762,
+          "_nanoseconds": 496000000
+        },
+        "subscriptionEnd": null,
+        "plan": "free",
+        "dailyQuotaUsed": 0,
+        "quotaUsed": 3,
+        "quotaLimit": 50
+      }
+    },
+    "createTime": "2025-06-15T05:36:02.854Z",
+    "updateTime": "2025-06-27T08:12:47.378Z"
+  },
+  {
+    "id": "JiQr9Se8roSlHG8o3JmEFdKsp2E3",
+    "data": {
+      "uid": "JiQr9Se8roSlHG8o3JmEFdKsp2E3",
+      "email": "sithusoethan@gmail.com",
+      "fullName": "Sithu Soe Than",
+      "createdAt": {
+        "_seconds": 1750989191,
+        "_nanoseconds": 766000000
+      },
+      "lastActivity": {
+        "_seconds": 1751032984,
+        "_nanoseconds": 351000000
+      },
+      "subscription": {
+        "plan": "free",
+        "billingPeriod": "trial",
+        "subscriptionStart": {
+          "_seconds": 1750989191,
+          "_nanoseconds": 766000000
+        },
+        "subscriptionEnd": null,
+        "isActive": true,
+        "autoRenew": false,
+        "isInGracePeriod": false,
+        "dailyQuotaUsed": 0,
+        "dailyQuotaLimit": 5,
+        "lastResetDate": {
+          "_seconds": 1750989191,
+          "_nanoseconds": 766000000
+        },
+        "quotaLimit": 50,
+        "quotaUsed": 3
+      },
+      "lastLogin": {
+        "_seconds": 1751042282,
+        "_nanoseconds": 427000000
+      }
+    },
+    "createTime": "2025-06-27T01:53:13.387Z",
+    "updateTime": "2025-06-27T16:38:03.409Z"
+  },
+  {
+    "id": "eQojOg4YIBfg2jjfmPrwxyBDMpi1",
+    "data": {
+      "uid": "eQojOg4YIBfg2jjfmPrwxyBDMpi1",
+      "email": "kyawphonehan@gmail.com",
+      "fullName": "Kyaw Phone Han",
+      "createdAt": {
+        "_seconds": 1750492092,
+        "_nanoseconds": 96000000
+      },
+      "preferences": {
+        "quotaAlerts": true,
+        "theme": "system"
+      },
+      "phone": "+959759697092",
+      "company": "Xerovit",
+      "position": "Developer",
+      "updatedAt": {
+        "_seconds": 1751180259,
+        "_nanoseconds": 472000000
+      },
+      "lastActivity": {
+        "_seconds": 1751185515,
+        "_nanoseconds": 640000000
+      },
+      "lastLogin": {
+        "_seconds": 1751251967,
+        "_nanoseconds": 436000000
+      },
+      "subscription": {
+        "plan": "free",
+        "billingPeriod": "trial",
+        "subscriptionStart": {
+          "_seconds": 1750492092,
+          "_nanoseconds": 96000000
+        },
+        "subscriptionEnd": null,
+        "isActive": true,
+        "autoRenew": false,
+        "isInGracePeriod": false,
+        "dailyQuotaUsed": 0,
+        "dailyQuotaLimit": 5,
+        "quotaLimit": 50,
+        "lastResetDate": {
+          "_seconds": 1751012896,
+          "_nanoseconds": 689000000
+        },
+        "quotaUsed": 0,
+        "quotaResetDate": {
+          "_seconds": 1753843968,
+          "_nanoseconds": 806000000
+        }
+      }
+    },
+    "createTime": "2025-06-21T07:48:13.299Z",
+    "updateTime": "2025-06-30T02:52:49.134Z"
+  },
+  {
+    "id": "ighIycY4kJTPCWT2xc2SMO1FMMG2",
+    "data": {
+      "fullName": "June Pwint lay",
+      "uid": "ighIycY4kJTPCWT2xc2SMO1FMMG2",
+      "createdAt": {
+        "_seconds": 1750004765,
+        "_nanoseconds": 490000000
+      },
+      "email": "uaennajune@gmail.com",
+      "lastLogin": {
+        "_seconds": 1750056118,
+        "_nanoseconds": 67000000
+      },
+      "lastActivity": {
+        "_seconds": 1751011967,
+        "_nanoseconds": 28000000
+      },
+      "subscription": {
+        "subscriptionEnd": null,
+        "billingPeriod": "trial",
+        "autoRenew": false,
+        "subscriptionStart": {
+          "_seconds": 1750004765,
+          "_nanoseconds": 490000000
+        },
+        "plan": "free",
+        "isInGracePeriod": false,
+        "dailyQuotaLimit": 5,
+        "dailyQuotaUsed": 0,
+        "isActive": true,
+        "lastResetDate": {
+          "_seconds": 1750004765,
+          "_nanoseconds": 490000000
+        },
+        "quotaResetDate": {
+          "_seconds": 1752648088,
+          "_nanoseconds": 751000000
+        },
+        "quotaUsed": 1,
+        "quotaLimit": 50
+      }
+    },
+    "createTime": "2025-06-15T16:26:07.485Z",
+    "updateTime": "2025-06-27T08:12:47.378Z"
+  },
+  {
+    "id": "o5DGo29RAQdYF1pgp7PaRztpTc52",
+    "data": {
+      "uid": "o5DGo29RAQdYF1pgp7PaRztpTc52",
+      "email": "ri.in.rangoon@gmail.com",
+      "createdAt": {
+        "_seconds": 1749879958,
+        "_nanoseconds": 663000000
+      },
+      "subscription": {
+        "isActive": true,
+        "quotaLimit": 5,
+        "lastResetDate": {
+          "_seconds": 1749879958,
+          "_nanoseconds": 662000000
+        },
+        "dailyQuotaUsed": 0,
+        "isInGracePeriod": false,
+        "dailyQuotaLimit": 5,
+        "subscriptionEnd": {
+          "_seconds": 1752502873,
+          "_nanoseconds": 89000000
+        },
+        "gracePeriodEnd": null,
+        "billingPeriod": "monthly",
+        "quotaUsed": 0,
+        "lastPaymentReference": "kph",
+        "lastPaymentDate": {
+          "_seconds": 1749910873,
+          "_nanoseconds": 89000000
+        },
+        "subscriptionStart": {
+          "_seconds": 1749910873,
+          "_nanoseconds": 89000000
+        },
+        "autoRenew": true,
+        "lastPaymentAmount": 15000,
+        "paymentMethod": "manual",
+        "plan": "unlimited"
+      },
+      "preferences": {
+        "quotaAlerts": true,
+        "theme": "system"
+      },
+      "phone": "+9595104680",
+      "fullName": "Thiri Maung Maung Kyaw",
+      "company": "",
+      "position": "Financial Service Advisor ",
+      "updatedAt": {
+        "_seconds": 1751023595,
+        "_nanoseconds": 906000000
+      },
+      "lastLogin": {
+        "_seconds": 1751182621,
+        "_nanoseconds": 612000000
+      },
+      "lastActivity": {
+        "_seconds": 1751186974,
+        "_nanoseconds": 538000000
+      }
+    },
+    "createTime": "2025-06-14T05:46:01.128Z",
+    "updateTime": "2025-06-29T08:49:37.389Z"
+  },
+  {
+    "id": "rpQN0uzWtZXk8HSqfsVmlPJvyZE2",
+    "data": {
+      "createdAt": {
+        "_seconds": 1749890075,
+        "_nanoseconds": 347000000
+      },
+      "uid": "rpQN0uzWtZXk8HSqfsVmlPJvyZE2",
+      "fullName": "Su Htet Khin",
+      "email": "suhtetkhin7923@gmail.com",
+      "lastLogin": {
+        "_seconds": 1749890174,
+        "_nanoseconds": 577000000
+      },
+      "lastActivity": {
+        "_seconds": 1749910982,
+        "_nanoseconds": 42000000
+      },
+      "subscription": {
+        "dailyQuotaLimit": 5,
+        "quotaLimit": 5,
+        "autoRenew": false,
+        "isInGracePeriod": false,
+        "lastResetDate": {
+          "_seconds": 1749890075,
+          "_nanoseconds": 347000000
+        },
+        "isActive": true,
+        "dailyQuotaUsed": 0,
+        "quotaResetDate": {
+          "_seconds": 1752482175,
+          "_nanoseconds": 199000000
+        },
+        "subscriptionEnd": {
+          "_seconds": 1765722182,
+          "_nanoseconds": 42000000
+        },
+        "gracePeriodEnd": null,
+        "billingPeriod": "6months",
+        "quotaUsed": 0,
+        "lastPaymentReference": "kph",
+        "lastPaymentDate": {
+          "_seconds": 1749910982,
+          "_nanoseconds": 42000000
+        },
+        "subscriptionStart": {
+          "_seconds": 1749910982,
+          "_nanoseconds": 42000000
+        },
+        "lastPaymentAmount": 60000,
+        "paymentMethod": "manual",
+        "plan": "unlimited"
+      }
+    },
+    "createTime": "2025-06-14T08:34:35.494Z",
+    "updateTime": "2025-06-14T14:23:03.437Z"
+  },
+  {
+    "id": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+    "data": {
+      "uid": "vRl3BeF5W4NP03Yz92k2Xke2s1I3",
+      "createdAt": {
+        "_seconds": 1749803898,
+        "_nanoseconds": 212000000
+      },
+      "fullName": "Kyaw",
+      "email": "kyaw.debug@gmail.com",
+      "subscription": {
+        "dailyQuotaLimit": 5,
+        "quotaLimit": 5,
+        "isInGracePeriod": false,
+        "quotaUsed": 0,
+        "isActive": true,
+        "dailyQuotaUsed": 0,
+        "lastResetDate": {
+          "_seconds": 1749803898,
+          "_nanoseconds": 212000000
+        },
+        "quotaResetDate": {
+          "_seconds": 1752399229,
+          "_nanoseconds": 724000000
+        },
+        "gracePeriodEnd": null,
+        "plan": "unlimited",
+        "autoRenew": false,
+        "paymentMethod": "wave_money",
+        "billingPeriod": "12months",
+        "lastPaymentReference": "2221",
+        "lastPaymentDate": {
+          "_seconds": 1749813643,
+          "_nanoseconds": 624000000
+        },
+        "subscriptionStart": {
+          "_seconds": 1749813643,
+          "_nanoseconds": 624000000
+        },
+        "lastPaymentAmount": 96000,
+        "subscriptionEnd": {
+          "_seconds": 1799838012,
+          "_nanoseconds": 465000000
+        }
+      },
+      "lastLogin": {
+        "_seconds": 1749911301,
+        "_nanoseconds": 528000000
+      },
+      "lastActivity": {
+        "_seconds": 1749911578,
+        "_nanoseconds": 795000000
+      }
+    },
+    "createTime": "2025-06-13T08:38:19.160Z",
+    "updateTime": "2025-06-14T14:32:59.289Z"
+  },
+  {
+    "id": "zvvsBLp6rHZKgvEHgySN9U5yQj53",
+    "data": {
+      "email": "yinmartheint1998@gmail.com",
+      "uid": "zvvsBLp6rHZKgvEHgySN9U5yQj53",
+      "createdAt": {
+        "_seconds": 1749883176,
+        "_nanoseconds": 335000000
+      },
+      "fullName": "yinmar theint",
+      "lastLogin": {
+        "_seconds": 1749893265,
+        "_nanoseconds": 552000000
+      },
+      "lastActivity": {
+        "_seconds": 1749911066,
+        "_nanoseconds": 42000000
+      },
+      "subscription": {
+        "isInGracePeriod": false,
+        "dailyQuotaLimit": 5,
+        "quotaLimit": 5,
+        "dailyQuotaUsed": 0,
+        "lastResetDate": {
+          "_seconds": 1749883176,
+          "_nanoseconds": 335000000
+        },
+        "isActive": true,
+        "quotaUsed": 0,
+        "subscriptionEnd": {
+          "_seconds": 1752503066,
+          "_nanoseconds": 42000000
+        },
+        "gracePeriodEnd": null,
+        "billingPeriod": "monthly",
+        "lastPaymentReference": "kph",
+        "lastPaymentDate": {
+          "_seconds": 1749911066,
+          "_nanoseconds": 42000000
+        },
+        "subscriptionStart": {
+          "_seconds": 1749911066,
+          "_nanoseconds": 42000000
+        },
+        "autoRenew": true,
+        "lastPaymentAmount": 15000,
+        "paymentMethod": "manual",
+        "plan": "unlimited"
+      }
+    },
+    "createTime": "2025-06-14T06:39:36.805Z",
+    "updateTime": "2025-06-14T14:24:27.329Z"
+  }
+]
