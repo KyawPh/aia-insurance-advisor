@@ -854,24 +854,7 @@ function ProfileContent() {
                           />
                           
                           {/* Quota Warnings */}
-                          {quota?.subscription?.isInGracePeriod ? (
-                            <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-orange-100 to-amber-100 p-3">
-                              <div className="flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                                <p className="text-sm text-orange-900 font-medium">
-                                  Grace Period: {quota.dailyQuotaLimit - quota.dailyQuotaUsed} quotes left today
-                                </p>
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost"
-                                  className="ml-auto h-7 text-xs text-orange-700 hover:text-orange-900 hover:bg-orange-200"
-                                  onClick={() => router.push("/profile?tab=plans")}
-                                >
-                                  Renew →
-                                </Button>
-                              </div>
-                            </div>
-                          ) : quota?.subscription?.plan === 'free' && (quotaLimit - analytics.totalQuotes) < 3 ? (
+                          {quota?.subscription?.plan === 'free' && (quotaLimit - analytics.totalQuotes) < 3 ? (
                             <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-100 to-pink-100 p-3">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-red-600" />

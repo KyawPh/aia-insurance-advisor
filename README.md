@@ -125,6 +125,22 @@ npm run deploy:stable
 npm run deploy:all
 ```
 
+## 📚 Project Documentation
+
+### Essential Documentation Files
+
+**In Root (Quick Access):**
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant instructions & quick reference
+
+**In /docs/ (Detailed Documentation):**
+- **[PROJECT_DOCUMENTATION.md](./docs/PROJECT_DOCUMENTATION.md)** - Comprehensive project overview
+- **[CODEBASE_STRUCTURE.md](./docs/CODEBASE_STRUCTURE.md)** - Detailed file structure
+- **[RECENT_CHANGES.md](./docs/RECENT_CHANGES.md)** - Recent modifications log
+- **[DOCUMENTATION_UPDATE_GUIDE.md](./docs/DOCUMENTATION_UPDATE_GUIDE.md)** - Documentation templates & examples
+- **[TODO.md](./docs/TODO.md)** - Future improvements and feature roadmap
+
+**⚠️ IMPORTANT**: All AI assistants MUST update documentation after making changes. See [CLAUDE.md](./CLAUDE.md) for mandatory instructions and [docs/DOCUMENTATION_UPDATE_GUIDE.md](./docs/DOCUMENTATION_UPDATE_GUIDE.md) for detailed templates.
+
 ## 📁 Project Structure
 
 ```
@@ -290,33 +306,35 @@ Required for authentication:
 
 ## 👨‍💼 Admin Tools
 
-### Upgrade Request Management
+### Upgrade Request Management (Simplified)
 
-Admin scripts are available in the `scripts/` directory for managing subscription upgrades:
+Admin scripts have been simplified to just 4 essential files in the `scripts/` directory:
 
 ```bash
 # Navigate to scripts directory
 cd scripts
 
-# Install dependencies
+# Install dependencies (first time only)
 npm install
-
-# Set up Firebase admin credentials
-# Copy serviceAccountKey.json to scripts directory
 
 # Run admin console
 npm run admin
 ```
 
-**Features:**
-- Process pending upgrade requests
-- Approve/reject with payment tracking
-- View user subscription details
-- Generate revenue statistics
-- Manual subscription management
-- User data export
+**Simple 3-Option Menu:**
+1. **Process an upgrade request** - Approve pending requests
+2. **Create manual subscription** - For offline payments
+3. **List all users** - View subscription status
 
-See `scripts/README.md` for detailed admin documentation.
+**Only 4 Scripts Now:**
+- `manage-upgrades.js` - Main admin console
+- `admin-utils.js` - Utility functions
+- `firebase-admin-init.js` - Firebase setup
+- `list-users.js` - User listing
+
+All other scripts (25 files) have been archived to `scripts/archives/removed-scripts/`.
+
+See `scripts/README-SIMPLIFIED.md` for the new simplified guide.
 
 ## 🔮 Recent Updates
 

@@ -57,13 +57,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             subscriptionEnd: null, // Free trial never expires
             isActive: true,
             autoRenew: false,
-            isInGracePeriod: false,
             
             // Quota tracking
             quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
             quotaUsed: 0,
-            dailyQuotaUsed: 0,
-            dailyQuotaLimit: 5, // Default for grace period
             lastResetDate: Timestamp.fromDate(now)
           }
         })

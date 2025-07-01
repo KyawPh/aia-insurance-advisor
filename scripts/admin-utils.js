@@ -27,7 +27,7 @@ export async function createManualSubscription(email, billingPeriod, paymentRefe
     const subscriptionEnd = calculateSubscriptionEndDate(now, billingPeriod);
     const amount = SUBSCRIPTION_PRICES[billingPeriod];
 
-    // Update user subscription
+    // Update user subscription (aligned with current schema)
     await db.collection('users').doc(userRecord.uid).update({
       'subscription.plan': 'unlimited',
       'subscription.billingPeriod': billingPeriod,
@@ -35,14 +35,8 @@ export async function createManualSubscription(email, billingPeriod, paymentRefe
       'subscription.subscriptionEnd': subscriptionEnd,
       'subscription.isActive': true,
       'subscription.autoRenew': billingPeriod === 'monthly',
-      'subscription.isInGracePeriod': false,
-      'subscription.gracePeriodEnd': null,
-      'subscription.paymentMethod': 'manual',
       'subscription.quotaUsed': 0,
-      'subscription.dailyQuotaUsed': 0,
-      'subscription.lastPaymentReference': paymentReference,
-      'subscription.lastPaymentAmount': amount,
-      'subscription.lastPaymentDate': now,
+      'subscription.lastResetDate': now,
       'lastActivity': now
     });
 
@@ -93,10 +87,12 @@ export async function extendSubscription(email, additionalMonths) {
     const newEnd = new Date(currentEnd);
     newEnd.setMonth(newEnd.getMonth() + additionalMonths);
 
+    // Check if subscription should still be active
+    const isStillActive = newEnd > new Date();
+    
     await db.collection('users').doc(userRecord.uid).update({
       'subscription.subscriptionEnd': newEnd,
-      'subscription.isActive': true,
-      'subscription.isInGracePeriod': false,
+      'subscription.isActive': isStillActive,
       'lastActivity': new Date()
     });
 
@@ -120,7 +116,6 @@ export async function resetUserQuota(email) {
 
     await db.collection('users').doc(userRecord.uid).update({
       'subscription.quotaUsed': 0,
-      'subscription.dailyQuotaUsed': 0,
       'subscription.lastResetDate': new Date(),
       'lastActivity': new Date()
     });
@@ -370,10 +365,14 @@ export async function recalculateSubscription(email) {
       return;
     }
     
+    // Check if subscription should still be active
+    const now = new Date();
+    const isStillActive = correctEndDate > now;
+    
     // Update the subscription
     await db.collection('users').doc(userId).update({
       'subscription.subscriptionEnd': correctEndDate,
-      'subscription.isActive': true,
+      'subscription.isActive': isStillActive,
       'lastActivity': new Date()
     });
     

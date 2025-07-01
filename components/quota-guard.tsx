@@ -33,33 +33,20 @@ export function QuotaGuard({
     return <>{children}</>
   }
 
-  if (!canUseQuota || (quota?.subscription?.plan === 'free' && quotaRemaining < requiredQuota) || 
-      (quota?.subscription?.isInGracePeriod && (quota.dailyQuotaLimit - quota.dailyQuotaUsed) < requiredQuota)) {
+  if (!canUseQuota || (quota?.subscription?.plan === 'free' && quotaRemaining < requiredQuota)) {
     if (fallback) {
       return <>{fallback}</>
     }
 
     // Different messages based on subscription status
     const getAlertContent = () => {
-      if (quota?.subscription?.isInGracePeriod) {
-        const dailyRemaining = quota.dailyQuotaLimit - quota.dailyQuotaUsed
-        const graceDaysLeft = Math.ceil((quota.subscription.gracePeriodEnd!.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-        
-        return {
-          variant: "destructive" as const,
-          className: "border-orange-200 bg-orange-50",
-          icon: <Clock className="h-4 w-4 text-orange-600" />,
-          title: "Grace Period - Daily Limit Reached",
-          message: `You've used all ${quota.dailyQuotaLimit} quotes for today. Grace period ends in ${graceDaysLeft} days.`,
-          resetInfo: "Daily quota resets at midnight."
-        }
-      } else if (!quota?.subscription?.isActive) {
+      if (!quota?.subscription?.isActive) {
         return {
           variant: "destructive" as const,
           className: "border-red-200 bg-red-50",
           icon: <AlertTriangle className="h-4 w-4" />,
           title: "Subscription Expired",
-          message: "Your subscription has expired and grace period has ended.",
+          message: "Your subscription has expired.",
           resetInfo: "Renew your subscription to continue."
         }
       } else {
@@ -82,24 +69,12 @@ export function QuotaGuard({
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <div className={`relative overflow-hidden rounded-xl p-[1px] ${
-          alertContent.variant === 'destructive' && alertContent.className.includes('orange') 
-            ? 'bg-gradient-to-r from-orange-500 to-amber-500'
-            : 'bg-gradient-to-r from-red-500 to-pink-500'
-        }`}>
+        <div className="relative overflow-hidden rounded-xl p-[1px] bg-gradient-to-r from-red-500 to-pink-500">
           <div className="relative bg-white rounded-xl p-6">
-            <div className={`absolute inset-0 rounded-xl ${
-              alertContent.className.includes('orange') 
-                ? 'bg-gradient-to-r from-orange-50 to-amber-50'
-                : 'bg-gradient-to-r from-red-50 to-pink-50'
-            }`} />
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-50 to-pink-50" />
             <div className="relative">
               <div className="flex items-start gap-4">
-                <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
-                  alertContent.className.includes('orange')
-                    ? 'bg-gradient-to-br from-orange-500 to-amber-500'
-                    : 'bg-gradient-to-br from-red-500 to-pink-500'
-                }`}>
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
                   <div className="text-white">
                     {React.cloneElement(alertContent.icon, { className: 'h-6 w-6' })}
                   </div>
@@ -129,13 +104,10 @@ export function QuotaGuard({
                 </div>
               </motion.div>
               <CardTitle className="text-xl text-gray-900 font-light">
-                {quota?.subscription?.isInGracePeriod ? 'Renew Your Subscription' : 'Upgrade for Unlimited Quotes'}
+                Upgrade for Unlimited Quotes
               </CardTitle>
               <p className="text-sm text-gray-600">
-                {quota?.subscription?.isInGracePeriod 
-                  ? 'Reactivate your unlimited access now'
-                  : 'Continue creating insurance recommendations without limits'
-                }
+                Continue creating insurance recommendations without limits
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -167,7 +139,7 @@ export function QuotaGuard({
                   onClick={() => router.push('/profile?tab=plans')}
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  {quota?.subscription?.isInGracePeriod ? 'Renew Now' : 'Upgrade Now'}
+                  Upgrade Now
                 </Button>
               </div>
               
@@ -195,34 +167,19 @@ export function QuotaWarning() {
   
   // Show appropriate warning based on subscription status
   const shouldShowWarning = () => {
-    if (quota?.subscription?.isInGracePeriod) {
-      return (quota.dailyQuotaLimit - quota.dailyQuotaUsed) <= 2
-    }
     return quota?.subscription?.plan === 'free' && quotaRemaining <= 2 && quotaRemaining > 0
   }
   
   if (!shouldShowWarning()) return null
 
   const getWarningContent = () => {
-    if (quota?.subscription?.isInGracePeriod) {
-      const dailyRemaining = quota.dailyQuotaLimit - quota.dailyQuotaUsed
-      return {
-        title: "Grace Period - Low Daily Quota",
-        message: `You have ${dailyRemaining} quotes remaining today.`,
-        action: "Renew subscription",
-        className: "border-orange-200 bg-orange-50",
-        textColor: "text-orange-800",
-        iconColor: "text-orange-600"
-      }
-    } else {
-      return {
-        title: "Low Quota Warning",
-        message: `You have ${quotaRemaining} quotes remaining this month.`,
-        action: "", // TEMPORARY: Upgrade action hidden
-        className: "border-yellow-200 bg-yellow-50",
-        textColor: "text-yellow-800",
-        iconColor: "text-yellow-600"
-      }
+    return {
+      title: "Low Quota Warning",
+      message: `You have ${quotaRemaining} quotes remaining this month.`,
+      action: "", // TEMPORARY: Upgrade action hidden
+      className: "border-yellow-200 bg-yellow-50",
+      textColor: "text-yellow-800",
+      iconColor: "text-yellow-600"
     }
   }
   

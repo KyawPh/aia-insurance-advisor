@@ -397,11 +397,6 @@ function InsuranceAdvisorProContent() {
                         {calendarMonthQuotesRemaining}/{quotaLimit}
                       </span>
                     </div>
-                    {quota?.subscription?.isInGracePeriod && (
-                      <div className="mt-1 text-xs text-gray-400">
-                        Daily quota resets at midnight
-                      </div>
-                    )}
                   </div>
                 </div>
                 <DropdownMenuSeparator />

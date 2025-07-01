@@ -10,20 +10,16 @@ import {
   formatDate,
   formatCurrency
 } from './firebase-admin-init.js';
-import { runUtilityMenu } from './admin-utils.js';
+import { createManualSubscription } from './admin-utils.js';
 
 // Admin email from environment
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aia-insurance.com';
 
 // Main menu options
 const MAIN_MENU_CHOICES = {
-  LIST_PENDING: 'List pending upgrade requests',
-  LIST_ALL: 'List all upgrade requests',
   PROCESS_REQUEST: 'Process an upgrade request',
-  VIEW_USER: 'View user subscription details',
+  CREATE_MANUAL: 'Create manual subscription (offline payment)',
   LIST_USERS: 'List all users',
-  STATS: 'View upgrade statistics',
-  UTILITIES: 'Admin utilities',
   EXIT: 'Exit'
 };
 
@@ -232,21 +228,15 @@ async function approveUpgradeRequest(requestId, requestData) {
     // Start a batch write
     const batch = db.batch();
     
-    // Update user subscription
+    // Update user subscription (aligned with current schema)
     const userRef = db.collection('users').doc(requestData.userId);
     const subscriptionUpdate = {
       'subscription.plan': 'unlimited',
       'subscription.billingPeriod': requestData.billingPeriod,
       'subscription.isActive': true,
       'subscription.autoRenew': requestData.billingPeriod === 'monthly',
-      'subscription.isInGracePeriod': false,
-      'subscription.gracePeriodEnd': null,
-      'subscription.paymentMethod': requestData.paymentMethod,
       'subscription.quotaUsed': 0,
-      'subscription.dailyQuotaUsed': 0,
-      'subscription.lastPaymentReference': paymentReference,
-      'subscription.lastPaymentAmount': requestData.amount,
-      'subscription.lastPaymentDate': now,
+      'subscription.lastResetDate': now,
       'lastActivity': now
     };
     
@@ -497,6 +487,65 @@ async function viewStatistics() {
   }
 }
 
+// Create manual subscription with interactive prompts
+async function createManualSubscriptionInteractive() {
+  try {
+    console.log(chalk.cyan('\nCreate Manual Subscription (Offline Payment)\n'));
+    
+    const { email, billingPeriod, paymentReference } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'email',
+        message: 'User email:',
+        validate: input => input.includes('@') || 'Please enter a valid email'
+      },
+      {
+        type: 'list',
+        name: 'billingPeriod',
+        message: 'Select billing period:',
+        choices: [
+          { name: 'Monthly - 15,000 MMK', value: 'monthly' },
+          { name: '6 Months - 60,000 MMK (Save 20%)', value: '6months' },
+          { name: '12 Months - 96,000 MMK (Save 47%)', value: '12months' }
+        ]
+      },
+      {
+        type: 'input',
+        name: 'paymentReference',
+        message: 'Payment reference (receipt/transaction ID):',
+        validate: input => input.trim() !== '' || 'Payment reference is required'
+      }
+    ]);
+    
+    // Confirmation
+    const amount = SUBSCRIPTION_PRICES[billingPeriod];
+    console.log(chalk.yellow('\nPlease confirm:'));
+    console.log(chalk.white(`Email: ${email}`));
+    console.log(chalk.white(`Plan: Unlimited (${BILLING_PERIODS[billingPeriod].label})`));
+    console.log(chalk.white(`Amount: ${formatCurrency(amount)}`));
+    console.log(chalk.white(`Reference: ${paymentReference}`));
+    
+    const { confirm } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        message: 'Create this subscription?',
+        default: true
+      }
+    ]);
+    
+    if (!confirm) {
+      console.log(chalk.gray('Operation cancelled.'));
+      return;
+    }
+    
+    await createManualSubscription(email, billingPeriod, paymentReference);
+    
+  } catch (error) {
+    console.error(chalk.red('Error creating manual subscription:'), error.message);
+  }
+}
+
 // Main menu
 async function mainMenu() {
   while (true) {
@@ -514,20 +563,12 @@ async function mainMenu() {
     console.log();
     
     switch (choice) {
-      case MAIN_MENU_CHOICES.LIST_PENDING:
-        await listUpgradeRequests('pending');
-        break;
-        
-      case MAIN_MENU_CHOICES.LIST_ALL:
-        await listUpgradeRequests();
-        break;
-        
       case MAIN_MENU_CHOICES.PROCESS_REQUEST:
         await processUpgradeRequest();
         break;
         
-      case MAIN_MENU_CHOICES.VIEW_USER:
-        await viewUserSubscription();
+      case MAIN_MENU_CHOICES.CREATE_MANUAL:
+        await createManualSubscriptionInteractive();
         break;
         
       case MAIN_MENU_CHOICES.LIST_USERS:
@@ -541,15 +582,6 @@ async function mainMenu() {
         await new Promise((resolve) => {
           listUsers.on('close', resolve);
         });
-        break;
-        
-      case MAIN_MENU_CHOICES.STATS:
-        await viewStatistics();
-        break;
-        
-      case MAIN_MENU_CHOICES.UTILITIES:
-        const continueUtilities = await runUtilityMenu();
-        if (!continueUtilities) continue;
         break;
         
       case MAIN_MENU_CHOICES.EXIT:

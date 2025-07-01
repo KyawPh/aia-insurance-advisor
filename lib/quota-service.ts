@@ -24,18 +24,14 @@ export interface SubscriptionStatus {
   subscriptionEnd: Date
   isActive: boolean
   autoRenew: boolean
-  gracePeriodEnd?: Date
-  isInGracePeriod: boolean
   paymentMethod?: 'wave_money' | 'kbz_pay' | 'bank_transfer' | 'card'
 }
 
 export interface QuotaInfo {
-  // Quota tracking (only for free trial and grace period)
+  // Quota tracking (only for free trial)
   quotaLimit: number
   quotaUsed: number
   quotaRemaining: number
-  dailyQuotaUsed: number  // For grace period (5/day limit)
-  dailyQuotaLimit: number
   lastResetDate: Date
   
   // Subscription info
@@ -77,13 +73,10 @@ export class QuotaService {
         subscriptionEnd: null, // Free trial never expires
         isActive: true,
         autoRenew: false,
-        isInGracePeriod: false,
         
         // Quota tracking
         quotaLimit: 50, // TEMPORARY: Changed from 5 to 50 for promotional period
         quotaUsed: 0,
-        dailyQuotaUsed: 0,
-        dailyQuotaLimit: 5, // Default for grace period
         lastResetDate: Timestamp.fromDate(now)
       }
     }, { merge: true })
@@ -110,12 +103,10 @@ export class QuotaService {
       const sub = userData.subscription
       const now = new Date()
       
-      // Check if subscription has expired and handle grace period
+      // Check if subscription has expired
       const subscriptionEnd = sub?.subscriptionEnd?.toDate()
-      const gracePeriodEnd = sub?.gracePeriodEnd?.toDate()
       
       let isActive = sub?.isActive || false
-      let isInGracePeriod = false
       let canUseQuota = false
       
       // TEMPORARY: Check for monthly reset
@@ -151,29 +142,9 @@ export class QuotaService {
         canUseQuota = (sub?.quotaUsed || 0) < (sub?.quotaLimit || 50) // TEMPORARY: Changed from 5 to 50
       } else if (sub?.plan === 'unlimited') {
         if (subscriptionEnd && now > subscriptionEnd) {
-          // Subscription expired - check grace period
-          if (!gracePeriodEnd) {
-            // Start grace period (7 days)
-            const newGracePeriodEnd = new Date(subscriptionEnd)
-            newGracePeriodEnd.setDate(newGracePeriodEnd.getDate() + 7)
-            
-            await updateDoc(doc(db, 'users', userId), {
-              'subscription.gracePeriodEnd': Timestamp.fromDate(newGracePeriodEnd),
-              'subscription.isInGracePeriod': true,
-              'subscription.isActive': false
-            })
-            
-            isInGracePeriod = true
-            canUseQuota = this.checkGracePeriodQuota(sub, now)
-          } else if (now <= gracePeriodEnd) {
-            // In grace period
-            isInGracePeriod = true
-            canUseQuota = this.checkGracePeriodQuota(sub, now)
-          } else {
-            // Grace period expired - account suspended
-            isActive = false
-            canUseQuota = false
-          }
+          // Subscription expired - account suspended
+          isActive = false
+          canUseQuota = false
         } else {
           // Active unlimited subscription
           isActive = true
@@ -189,23 +160,17 @@ export class QuotaService {
         subscriptionEnd: subscriptionEnd || now,
         isActive,
         autoRenew: sub?.autoRenew || false,
-        gracePeriodEnd,
-        isInGracePeriod,
         paymentMethod: sub?.paymentMethod
       }
       
       // Calculate quota info
       const quotaLimit = sub?.plan === 'unlimited' && isActive ? -1 : (sub?.quotaLimit || 50) // TEMPORARY: Changed from 5 to 50
       const quotaUsed = sub?.quotaUsed || 0
-      const dailyQuotaUsed = sub?.dailyQuotaUsed || 0
-      const dailyQuotaLimit = sub?.dailyQuotaLimit || 5
       
       return {
         quotaLimit,
         quotaUsed,
         quotaRemaining: quotaLimit === -1 ? -1 : Math.max(0, quotaLimit - quotaUsed),
-        dailyQuotaUsed,
-        dailyQuotaLimit,
         lastResetDate: sub?.lastResetDate?.toDate() || now,
         subscription,
         canUseQuota,
@@ -219,18 +184,6 @@ export class QuotaService {
     }
   }
 
-  // Check grace period quota (5 quotes per day)
-  private static checkGracePeriodQuota(subscription: any, now: Date): boolean {
-    const lastReset = subscription?.lastResetDate?.toDate()
-    const dailyQuotaUsed = subscription?.dailyQuotaUsed || 0
-    
-    // Reset daily quota if it's a new day
-    if (!lastReset || !this.isSameDay(lastReset, now)) {
-      return true // New day, quota available
-    }
-    
-    return dailyQuotaUsed < 5 // Check if under daily limit
-  }
   
   // Check if two dates are the same day
   private static isSameDay(date1: Date, date2: Date): boolean {
@@ -246,8 +199,6 @@ export class QuotaService {
       quotaLimit: 50, // TEMPORARY: Changed from 5 to 50
       quotaUsed: 0,
       quotaRemaining: 50, // TEMPORARY: Changed from 5 to 50
-      dailyQuotaUsed: 0,
-      dailyQuotaLimit: 5,
       lastResetDate: now,
       subscription: {
         plan: 'free',
@@ -255,8 +206,7 @@ export class QuotaService {
         subscriptionStart: now,
         subscriptionEnd: now,
         isActive: true,
-        autoRenew: false,
-        isInGracePeriod: false
+        autoRenew: false
       },
       canUseQuota: true,
       plan: 'free',
@@ -285,20 +235,6 @@ export class QuotaService {
         if (quotaInfo.quotaRemaining < amount) {
           return false
         }
-      } else if (quotaInfo.subscription.isInGracePeriod) {
-        // Grace period: Check daily quota (5 per day)
-        const now = new Date()
-        const lastReset = quotaInfo.lastResetDate
-        
-        // Reset daily quota if new day
-        if (!this.isSameDay(lastReset, now)) {
-          await updateDoc(doc(db, 'users', userId), {
-            'subscription.dailyQuotaUsed': 0,
-            'subscription.lastResetDate': Timestamp.fromDate(now)
-          })
-        } else if (quotaInfo.dailyQuotaUsed + amount > quotaInfo.dailyQuotaLimit) {
-          return false // Exceeded daily limit
-        }
       }
       // Unlimited active subscription: No limits
       
@@ -309,8 +245,6 @@ export class QuotaService {
       
       if (quotaInfo.subscription.plan === 'free') {
         updates['subscription.quotaUsed'] = increment(amount)
-      } else if (quotaInfo.subscription.isInGracePeriod) {
-        updates['subscription.dailyQuotaUsed'] = increment(amount)
       }
       
       await updateDoc(doc(db, 'users', userId), updates)
@@ -322,8 +256,7 @@ export class QuotaService {
         timestamp: Timestamp.now(),
         metadata,
         quotaConsumed: amount,
-        subscriptionStatus: quotaInfo.subscription.plan,
-        inGracePeriod: quotaInfo.subscription.isInGracePeriod
+        subscriptionStatus: quotaInfo.subscription.plan
       })
       
       return true
@@ -498,11 +431,8 @@ export class QuotaService {
         'subscription.subscriptionEnd': Timestamp.fromDate(subscriptionEnd),
         'subscription.isActive': true,
         'subscription.autoRenew': billingPeriod === 'monthly', // Only monthly auto-renews
-        'subscription.isInGracePeriod': false,
-        'subscription.gracePeriodEnd': null,
         'subscription.paymentMethod': paymentMethod,
         'subscription.quotaUsed': 0, // Reset quota on upgrade
-        'subscription.dailyQuotaUsed': 0,
         'lastActivity': Timestamp.now()
       })
       
